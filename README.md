@@ -1,2 +1,3 @@
-# AdotAi
-Repositório para versionamento do trabalho da disciplica CCF 321 (Projeto de Sistemas para Web)
+# AdotAí
+Um Hub para adoção de animais
+**Faça um match com seu pet!** 🐶🐱
