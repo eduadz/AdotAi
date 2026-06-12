@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:17.9-bookworm
+    container_name: adotai-db
+    environment: #provisório - só para fazer funcionar mesmo
+      POSTGRES_USER: adotai_user
+      POSTGRES_PASSWORD: adotai_password
+      POSTGRES_DB: adotai_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - adotai-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: adotai-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      DATABASE_URL: postgres://adotai_user:adotai_password@db:5432/adotai_db
+    depends_on:
+      - db
+    networks:
+      - adotai-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: adotai-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - adotai-network
+
+volumes:
+  postgres_data:
+
+networks:
+  adotai-network:
+    driver: bridge
