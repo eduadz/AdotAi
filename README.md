@@ -5,9 +5,17 @@
 ## Estrutura do projeto 
 Padrão arquitetural MVC no qual:
 <ul>
-    <li><b>Model:</b> Guarda regras de negócio e armazena dados do sistema</li>
-    <li><b>Controller:</b> Intermediário entre model e view, realiza os devidos processamentos do sistema</li>
-    <li><b>View</b> Interação entre usuário e sistema</li>
+    <li><b>Diretório Back-end</b>
+        <ul>
+            <li>Model: Guarda regras de negócio e armazena dados do sistema</li>
+            <li>Controller: Intermediário entre model e view, realiza os devidos processamentos do sistema</li>
+        </ul>
+    </li>
+        <li> <b>Diretório Front-end</b>
+            <ul>
+                <li>View: Interação entre usuário e sistema</li>
+            </ul>
+        </li>
 </ul>
 
 ## Stack:
@@ -18,4 +26,4 @@ Padrão arquitetural MVC no qual:
 </ul>
 
 ## Como executar/Como acessar
-planos futuros
+make up (acessar localhost:3000)
