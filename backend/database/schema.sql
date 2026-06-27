@@ -7,7 +7,7 @@ CREATE TABLE adotai.usuarios (
     cpf VARCHAR(11) UNIQUE NOT NULL,
     telefone VARCHAR(15) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    senha_hash VARCHAR(255) NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL
 );
 
 -- Administradores: responsáveis por cadastrar, editar e remover animais.
@@ -15,7 +15,7 @@ CREATE TABLE adotai.administradores (
     id_admin SERIAL PRIMARY KEY,
     nome VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE NOT NULL,
-    senha_hash VARCHAR(255) NOT NULL,
+    senha_hash VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE adotai.enderecos (
