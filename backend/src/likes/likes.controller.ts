@@ -1,6 +1,7 @@
-import { Controller, Post, Delete, Get, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Delete, Get, Param, ParseIntPipe, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { LikesService } from './likes.service';
+import { UserAuthGuard } from '../auth/user-auth.guard'
 
 @ApiTags('Likes')
 @Controller()
@@ -14,8 +15,7 @@ export class LikesController {
   @ApiResponse({ status: 409, description: 'Usuário já curtiu este animal.' })
   @ApiResponse({ status: 404, description: 'Animal não encontrado.' })
   like(@Param('id', ParseIntPipe) petId: number) {
-    // Parte gustavo — obter userId do token JWT
-    const userId = 0;
+    const userId = req.user.sub;
     return this.likesService.like(userId, petId);
   }
 
@@ -25,8 +25,7 @@ export class LikesController {
   @ApiResponse({ status: 200, description: 'Curtida removida com sucesso.' })
   @ApiResponse({ status: 404, description: 'Like não encontrado.' })
   unlike(@Param('id', ParseIntPipe) petId: number) {
-    // Parte gustavo — obter userId do token JWT
-    const userId = 0;
+    const userId = req.user.sub;
     return this.likesService.unlike(userId, petId);
   }
 
@@ -35,8 +34,7 @@ export class LikesController {
   @ApiResponse({ status: 200, description: 'Lista de animais curtidos retornada com sucesso.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   getUserLikes() {
-    // Parte gustavo — obter userId do token JWT
-    const userId = 0;
+    const userId = req.user.sub;
     return this.likesService.getUserLikes(userId);
   }
 

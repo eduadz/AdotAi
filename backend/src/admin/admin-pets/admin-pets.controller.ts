@@ -1,9 +1,10 @@
-import { Controller, Post, Patch, Delete, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Patch, Delete, Param, Body, ParseIntPipe, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { AdminPetsService } from './admin-pets.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { UpdatePetStatusDto } from './dto/update-pet-status.dto';
+import { AdminAuthGuard } from '../admin-auth/admin-auth.guard'
 
 @ApiTags('Admin - Pets')
 @Controller('admin/pets')
@@ -15,8 +16,7 @@ export class AdminPetsController {
   @ApiBody({ type: CreatePetDto })
   @ApiResponse({ status: 201, description: 'Animal cadastrado com sucesso.' })
   create(@Body() dto: CreatePetDto) {
-    // Parte gustavo — obter adminId do token JWT
-    const adminId = 0;
+    const adminId = req.admin.sub;
     return this.adminPetsService.create(adminId, dto);
   }
 

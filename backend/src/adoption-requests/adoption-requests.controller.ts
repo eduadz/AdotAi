@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Patch, Param, Body, ParseIntPipe } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Param, Body, ParseIntPipe, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
 import { AdoptionRequestsService } from './adoption-requests.service';
 import { CreateAdoptionRequestDto } from './dto/create-adoption-request.dto';

@@ -1,7 +1,8 @@
-import { Controller, Get, Patch, Body } from '@nestjs/common';
+import { Controller, Get, Patch, Body, Request } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UserAuthGuard } from '../auth/user-auth.guard'
 
 @ApiTags('Usuário - Perfil')
 @Controller('users')
@@ -13,8 +14,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Perfil retornado com sucesso.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   getProfile() {
-    // Parte gustavo — obter userId do token JWT
-    const userId = 0;
+    const userId = req.user.sub;
     return this.usersService.getProfile(userId);
   }
 
@@ -24,8 +24,7 @@ export class UsersController {
   @ApiResponse({ status: 200, description: 'Perfil atualizado com sucesso.' })
   @ApiResponse({ status: 401, description: 'Não autenticado.' })
   updateProfile(@Body() updateUserDto: UpdateUserDto) {
-    // Parte gustavo — obter userId do token JWT
-    const userId = 0;
+    const userId = req.user.sub;
     return this.usersService.updateProfile(userId, updateUserDto);
   }
 }
