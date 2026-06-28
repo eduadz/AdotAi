@@ -1,12 +1,16 @@
-import { Controller, Post, Patch, Delete, Param, Body, ParseIntPipe, Request } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { 
+  Controller, Post, Patch, Delete, Param, Body, ParseIntPipe, Request, UseGuards 
+} from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody, ApiBearerAuth } from '@nestjs/swagger';
 import { AdminPetsService } from './admin-pets.service';
 import { CreatePetDto } from './dto/create-pet.dto';
 import { UpdatePetDto } from './dto/update-pet.dto';
 import { UpdatePetStatusDto } from './dto/update-pet-status.dto';
-import { AdminAuthGuard } from '../admin-auth/admin-auth.guard'
+import { AdminGuard } from '../admin-auth/admin.guard'; 
 
 @ApiTags('Admin - Pets')
+@UseGuards(AdminGuard)
+@ApiBearerAuth() 
 @Controller('admin/pets')
 export class AdminPetsController {
   constructor(private readonly adminPetsService: AdminPetsService) {}
@@ -15,8 +19,8 @@ export class AdminPetsController {
   @ApiOperation({ summary: 'Cadastrar um novo animal' })
   @ApiBody({ type: CreatePetDto })
   @ApiResponse({ status: 201, description: 'Animal cadastrado com sucesso.' })
-  create(@Body() dto: CreatePetDto) {
-    const adminId = req.admin.sub;
+  create(@Request() req, @Body() dto: CreatePetDto) { 
+    const adminId = req.user.sub;//
     return this.adminPetsService.create(adminId, dto);
   }
 

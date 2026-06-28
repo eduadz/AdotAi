@@ -8,7 +8,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Request } from 'express';
 
 @Injectable()
-export class UserAuthGuard implements CanActivate {
+export class AuthGuard implements CanActivate {
   constructor(private jwtService: JwtService) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -24,7 +24,7 @@ export class UserAuthGuard implements CanActivate {
         secret: 'chave-secreta-super-segura',
       });
       
-      // Salva os dados do token dentro de "user"
+      // O payload agora contém { sub, email, role }
       request['user'] = payload;
     } catch {
       throw new UnauthorizedException('Token inválido ou expirado!');

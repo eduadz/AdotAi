@@ -30,12 +30,13 @@ export class AuthService {
       const payload = { 
         sub: novoUsuario.id_usuario, 
         email: novoUsuario.email,
-        tipo: 'usuario' // Identificador útil para diferenciar de admin depois
+        role: 'usuario' // Identificador útil para diferenciar de admin depois
       };
 
       return {
         message: 'Usuário cadastrado com sucesso!',
         access_token: await this.jwtService.signAsync(payload),
+        role: 'usuario'
       };
       
     } catch (error) {
@@ -47,25 +48,50 @@ export class AuthService {
       throw error;
     }
   }
-  async login(loginDto: LoginDto) {
+async login(loginDto: LoginDto) {
+    // ETAPA 1 — Buscar na tabela de Administradores
+    const admins = await this.db.query(
+      'SELECT * FROM adotai.administradores WHERE email = $1',
+      [loginDto.email],
+    );
+
+    if (admins.length > 0) {
+      const admin = admins[0];
+      
+      // Valida a senha do admin
+      if (admin.senha_hash !== loginDto.senha) {
+        throw new UnauthorizedException('Email ou senha incorretos.');
+      }
+
+      const payload = { sub: admin.id_admin, email: admin.email, role: 'admnistrador' };
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+        role: 'admnistrador',
+      };
+    }
+
+    // ETAPA 2 — Buscar na tabela de Usuários Comuns (só chega aqui se não for admin)
     const usuarios = await this.db.query(
       'SELECT * FROM adotai.usuarios WHERE email = $1',
       [loginDto.email],
     );
-    const usuario = usuarios[0];
 
-    if (!usuario || usuario.senha_hash !== loginDto.senha) {
-      throw new UnauthorizedException('Email ou senha incorretos.');
+    if (usuarios.length > 0) {
+      const usuario = usuarios[0];
+      
+      // Valida a senha do usuário
+      if (usuario.senha_hash !== loginDto.senha) {
+        throw new UnauthorizedException('Email ou senha incorretos.');
+      }
+
+      const payload = { sub: usuario.id_usuario, email: usuario.email, role: 'usuario' };
+      return {
+        access_token: await this.jwtService.signAsync(payload),
+        role: 'usuario',
+      };
     }
 
-    const payload = { 
-      sub: usuario.id_usuario, 
-      email: usuario.email,
-      tipo: 'usuario'
-    };
-
-    return {
-      access_token: await this.jwtService.signAsync(payload),
-    };
+    // ETAPA 3 — Resposta de Erro (não achou em nenhuma das duas tabelas)
+    throw new UnauthorizedException('Email ou senha incorretos.');
   }
 }
