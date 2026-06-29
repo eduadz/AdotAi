@@ -20,7 +20,7 @@ export class AdminPetsController {
   @ApiBody({ type: CreatePetDto })
   @ApiResponse({ status: 201, description: 'Animal cadastrado com sucesso.' })
   create(@Request() req, @Body() dto: CreatePetDto) { 
-    const adminId = req.user.sub;//
+    const adminId = req.user.sub;
     return this.adminPetsService.create(adminId, dto);
   }
 

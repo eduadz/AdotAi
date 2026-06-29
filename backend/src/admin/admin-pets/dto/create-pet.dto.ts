@@ -1,7 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import {IsString,IsNotEmpty } from 'class-validator';
 
 export class CreatePetDto {
   @ApiProperty({ description: 'Nome do animal', example: 'Rex' })
+  @IsString()
+  @IsNotEmpty({ message: 'O nome é obrigatório' })
   nome: string;
 
   @ApiPropertyOptional({ description: 'Descrição do animal', example: 'Cachorro dócil e brincalhão' })

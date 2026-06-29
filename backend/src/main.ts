@@ -2,6 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { json, urlencoded } from 'express';
+import { ValidationPipe } from '@nestjs/common';
 
 async function bootstrap() {
   // 1. A MÁGICA ACONTECE AQUI: bodyParser: false desativa o limite padrão de 100kb!
@@ -10,6 +11,14 @@ async function bootstrap() {
   // 2. Agora o nosso parser com limite de 50mb assume o controle sem ser interrompido
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
+
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, 
+      forbidNonWhitelisted: true,
+      transform: true, 
+    }),
+  );
 
   app.enableCors();
 
