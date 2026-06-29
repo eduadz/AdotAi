@@ -10,6 +10,9 @@ export class UpdatePetDto {
   @ApiPropertyOptional({ description: 'Tipo do animal', example: 'cachorro', enum: ['cachorro', 'gato'] })
   tipo?: string;
 
+  @ApiPropertyOptional({ description: 'Raça do animal', example: 'SRD' })
+  raca?: string;
+
   @ApiPropertyOptional({ description: 'Gênero do animal', example: 'macho', enum: ['macho', 'femea'] })
   genero?: string;
 

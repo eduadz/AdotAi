@@ -1,9 +1,17 @@
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
+import { json, urlencoded } from 'express';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  // 1. A MÁGICA ACONTECE AQUI: bodyParser: false desativa o limite padrão de 100kb!
+  const app = await NestFactory.create(AppModule, { bodyParser: false });
+
+  // 2. Agora o nosso parser com limite de 50mb assume o controle sem ser interrompido
+  app.use(json({ limit: '50mb' }));
+  app.use(urlencoded({ extended: true, limit: '50mb' }));
+
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('AdotAi API')
@@ -21,6 +29,7 @@ async function bootstrap() {
     .addTag('Admin - Fotos', 'Gerenciamento de fotos de animais')
     .addTag('Admin - Pedidos de Adoção', 'Gerenciamento de pedidos pelo administrador')
     .build();
+    
   const documentFactory = () => SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, documentFactory);
 

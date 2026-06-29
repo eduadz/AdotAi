@@ -10,6 +10,7 @@ export class PetsController {
 
   @Get()
   @ApiOperation({ summary: 'Listar animais disponíveis com filtros opcionais' })
+  @ApiQuery({ name: 'id', required: false, description: 'ID do animal', example: 1 })
   @ApiQuery({ name: 'tipo', required: false, description: 'Tipo do animal', example: 'cachorro' })
   @ApiQuery({ name: 'porte', required: false, description: 'Porte do animal', example: 'pequeno' })
   @ApiQuery({ name: 'genero', required: false, description: 'Gênero do animal', example: 'femea' })

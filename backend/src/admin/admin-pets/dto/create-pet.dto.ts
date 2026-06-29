@@ -10,6 +10,9 @@ export class CreatePetDto {
   @ApiPropertyOptional({ description: 'Tipo do animal', example: 'cachorro', enum: ['cachorro', 'gato'] })
   tipo?: string;
 
+  @ApiPropertyOptional({ description: 'Raça do animal', example: 'SRD' })
+  raca?: string;
+
   @ApiPropertyOptional({ description: 'Gênero do animal', example: 'macho', enum: ['macho', 'femea'] })
   genero?: string;
 
@@ -33,4 +36,7 @@ export class CreatePetDto {
 
   @ApiPropertyOptional({ description: 'Se o animal é castrado', example: false, default: false })
   castrado?: boolean;
+
+  @ApiPropertyOptional({ description: 'Foto do animal em formato Base64' })
+  foto?: string;
 }

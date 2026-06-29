@@ -13,9 +13,11 @@ export class AdminPetsService {
    * Constrói dinamicamente a query com base nos campos definidos no DTO.
    */
   async create(adminId: number, dto: CreatePetDto) {
-    const keys = ['id_admin', ...Object.keys(dto)];
+    const { foto, ...petData } = dto;
+
+    const keys = ['id_admin', ...Object.keys(petData)];
     const placeholders = keys.map((_, i) => `$${i + 1}`);
-    const values = [adminId, ...Object.values(dto)];
+    const values = [adminId, ...Object.values(petData)];
 
     const queryStr = `
       INSERT INTO adotai.pets (${keys.join(', ')})
@@ -23,7 +25,16 @@ export class AdminPetsService {
       RETURNING *
     `;
     const rows = await this.db.query(queryStr, values);
-    return { message: 'Animal cadastrado com sucesso.', pet: rows[0] };
+    const novoPet = rows[0];
+
+    if (foto) {
+      await this.db.query(
+        `INSERT INTO adotai.pet_fotos (id_pet, url) VALUES ($1, $2)`,
+        [novoPet.id_pet, foto]
+      );
+    }
+
+    return { message: 'Animal cadastrado com sucesso.', pet: novoPet };
   }
 
   /**

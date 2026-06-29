@@ -39,6 +39,7 @@ CREATE TABLE adotai.pets (
     nome VARCHAR(80) NOT NULL,
     descricao TEXT,
     tipo VARCHAR(20),              -- cachorro, gato etc.
+    raca VARCHAR(80),
     genero VARCHAR(20),            -- macho, femea
     porte VARCHAR(20),             -- pequeno, medio, grande
     cor_pelagem VARCHAR(30),

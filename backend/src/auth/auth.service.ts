@@ -63,10 +63,10 @@ async login(loginDto: LoginDto) {
         throw new UnauthorizedException('Email ou senha incorretos.');
       }
 
-      const payload = { sub: admin.id_admin, email: admin.email, role: 'admnistrador' };
+      const payload = { sub: admin.id_admin, email: admin.email, role: 'administrador' };
       return {
         access_token: await this.jwtService.signAsync(payload),
-        role: 'admnistrador',
+        role: 'administrador',
       };
     }
 
