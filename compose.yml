@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:17.9-bookworm
+    container_name: adotai-db
+    env_file: .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - adotai-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: adotai-backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file: .env
+    environment:
+      # Sobrescreve DATABASE_URL para usar hostname do container dentro da rede Docker
+      DATABASE_URL: postgres://adotai_user:adotai_password@db:5432/adotai_db
+    depends_on:
+      - db
+    networks:
+      - adotai-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: adotai-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      NEXT_PUBLIC_API_URL: http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - adotai-network
+
+volumes:
+  postgres_data:
+
+networks:
+  adotai-network:
+    driver: bridge

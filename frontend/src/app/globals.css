@@ -1,0 +1,146 @@
+@import url('https://fonts.googleapis.com/css2?family=Lexend+Giga:wght@400;700&family=Lexend+Zetta:wght@400;700&family=Libertinus+Keyboard&family=Life+Savers:wght@400;700;800&display=swap');
+
+@import "tailwindcss";
+@import "tailwindcss/utilities" layer(utilities);
+
+@theme {
+  /* Cores */
+  --color-adotai-primaria: #55B3CE;
+  --color-adotai-secundaria: #D9D9D9;
+  --color-adotai-fundo: #ECCE8E;
+  --color-adotai-fundoHeader: #D9D9D9;
+  --color-adotai-fundoCard: #C6D6B8;
+  --color-adotai-textoPrincipal: #06383D;
+  --color-adotai-textoSecundario: #000000;
+  --color-adotai-textoBotao: #000A06;
+  --color-adotai-fundoInput: #E1E8D8;
+  --color-adotai-overlay: rgba(6, 56, 61, 0.4);
+
+  /* Tipografia */
+  --font-logo: "Libertinus Keyboard", serif;
+  --font-title: "Life Savers", serif;
+  --font-paragraph: "Lexend Giga", sans-serif;
+  --font-btnPrimary: "Lexend Zetta", sans-serif;
+  --font-btnSecondary: "Life Savers", serif;
+
+  /* Bordas */
+  --radius-adotai: 30px;
+  --radius-adotai-sm: 20px;
+  --radius-adotai-xs: 15px;
+
+  /* Sombras */
+  --shadow-adotai-btn: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+  /* Largura padrão do container de conteúdo (usado por header e cards) */
+  --adotai-container-max-width: 64rem; /* equivalente aproximado a max-w-4xl */
+  /* Cores para ações destrutivas */
+  --color-adotai-destructive: #E25A5A;
+  --color-adotai-destructive-dark: #C84B4B;
+}
+
+@utility borda-pelos {
+  border: 2px dashed var(--color-adotai-textoSecundario);
+  outline: 2px dotted var(--color-adotai-textoSecundario);
+  outline-offset: -1px;
+}
+
+@utility animate-modal {
+  animation: modalEnter 0.2s ease-out forwards;
+}
+
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@layer utilities {
+  .adotai-card {
+    @apply bg-adotai-fundoCard border border-adotai-textoSecundario rounded-adotai p-6 shadow-adotai-btn;
+  }
+
+  /* Container que padroniza a largura do conteúdo (header e cards) */
+  .adotai-container {
+    width: calc(100% - 8px);
+    max-width: var(--adotai-container-max-width); 
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .adotai-card-sm {
+    @apply bg-adotai-fundoCard border border-adotai-textoSecundario rounded-adotai-sm p-4 shadow-sm;
+  }
+
+  .adotai-form-control {
+    @apply w-full bg-adotai-fundoInput border border-adotai-textoSecundario rounded-adotai-sm px-5 py-3 text-base font-paragraph text-adotai-textoPrincipal placeholder:text-adotai-textoPrincipal focus:outline-none focus:ring-2 focus:ring-adotai-primaria transition-shadow;
+  }
+
+  .adotai-select {
+    @apply w-full bg-adotai-fundoInput border border-adotai-textoSecundario rounded-adotai-sm px-5 py-3 text-base font-paragraph text-adotai-textoPrincipal outline-none focus:ring-2 focus:ring-adotai-primaria transition-shadow;
+  }
+
+  .adotai-btn {
+    @apply cursor-pointer rounded-adotai-xs shadow-adotai-btn transition-transform active:scale-95 inline-flex items-center justify-center;
+  }
+
+  .adotai-btn-primary {
+    @apply bg-adotai-primaria text-adotai-textoBotao border-2 border-adotai-textoSecundario hover:brightness-105;
+  }
+
+  /* Botão para ações destrutivas — reutiliza a mesma borda do primário */
+  .adotai-btn-destructive {
+    border: 2px solid var(--color-adotai-textoSecundario);
+    background-color: var(--color-adotai-destructive);
+    color: white;
+  }
+
+  .adotai-btn-destructive:hover {
+    background-color: var(--color-adotai-destructive-dark);
+    filter: brightness(1.02);
+  }
+
+  .adotai-btn-secondary {
+    @apply bg-adotai-secundaria text-adotai-textoBotao border-2 border-adotai-textoSecundario hover:brightness-95;
+  }
+
+  .adotai-modal-overlay {
+    @apply fixed inset-0 z-50 flex items-center justify-center p-4 bg-adotai-overlay backdrop-blur-sm;
+  }
+
+  .adotai-modal-content {
+    @apply bg-adotai-fundo border-2 border-adotai-textoSecundario rounded-adotai p-6 md:p-10 max-w-2xl w-full shadow-adotai-btn relative z-10 animate-modal;
+  }
+
+  .adotai-heading {
+    @apply font-title text-adotai-textoPrincipal;
+  }
+
+  .adotai-heading-xl {
+    @apply text-5xl md:text-6xl font-extrabold;
+  }
+
+  .adotai-heading-lg {
+    @apply text-3xl md:text-4xl font-extrabold;
+  }
+
+  .adotai-body {
+    @apply font-paragraph text-adotai-textoPrincipal;
+  }
+
+  .adotai-caption {
+    @apply font-paragraph text-xs text-adotai-textoSecundario;
+  }
+
+  .adotai-badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2 py-1 bg-adotai-fundoCard border border-adotai-textoSecundario text-xs font-paragraph text-adotai-textoPrincipal shadow-sm;
+  }
+}
+
+input::placeholder, 
+textarea::placeholder {
+  color: var(--color-adotai-textoPrincipal);
+  opacity: 0.6;
+}
