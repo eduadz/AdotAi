@@ -54,9 +54,6 @@ private extractUserIdFromToken(authHeader: string): number {
       const token = authHeader.split(' ')[1];
       const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
       
-      // 🕵️ Log temporário para descobrirmos a estrutura do seu token
-      console.log('Payload do JWT recebido:', payload);
-
       // Tenta extrair usando as chaves mais comuns do mercado
       const userId = payload.sub || payload.id || payload.id_usuario || payload.userId;
       

@@ -8,15 +8,15 @@ import { useAuth } from "@/context/AuthContext";
 import Image from "next/image";
 import Link from "next/link";
 
-// 1. Tipagem (Adapte se o seu banco retornar os campos com nomes diferentes)
+// 1. Tipagem ajustada (id_pet adicionado para consistência)
 export interface Pet {
-  id: number;
+  id_pet: number;
   nome: string;
   tipo: string;
   idade: string;
   porte: string;
-  curtidas?: number; // Opcional, caso não tenha isso no banco ainda
-  foto?: string;     // Opcional
+  curtidas?: number;
+  foto?: string;
 }
 
 interface Filtros {
@@ -27,53 +27,59 @@ interface Filtros {
 
 export default function GerenciarAnimais() {
   const { user } = useAuth();
-  // 2. Estados Iniciais: Agora a lista de pets começa VAZIA!
   const [pets, setPets] = useState<Pet[]>([]);
-  const [isLoading, setIsLoading] = useState(true); // Controla o "Carregando..."
-  const [erroConsulta, setErroConsulta] = useState(""); // Guarda erros, caso o servidor caia
+  const [isLoading, setIsLoading] = useState(true);
+  const [erroConsulta, setErroConsulta] = useState("");
 
   const filtrosIniciais = { tipo: "", porte: "", idade: "" };
   const [filtrosTemporarios, setFiltrosTemporarios] = useState<Filtros>(filtrosIniciais);
   const [filtrosAplicados, setFiltrosAplicados] = useState<Filtros>(filtrosIniciais);
-  const [petParaExcluir, setPetParaExcluir] = useState<{ id: number; nome: string } | null>(null);
+  const [petParaExcluir, setPetParaExcluir] = useState<Pet | null>(null);
 
-  // 3. O useEffect: Dispara automaticamente quando a página abre
-  useEffect(() => {
+useEffect(() => {
     const buscarAnimaisDoBanco = async () => {
-    try {
-      const response = await fetch("http://localhost:8000/pets", {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${user?.token}` 
-        }
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        console.error("Erro detalhado da API:", errorData || response.statusText);
+      try {
+        const response = await fetch("http://localhost:8000/pets", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${user?.token}` 
+          }
+        });
         
-        throw new Error(`Erro ${response.status}: Falha ao buscar dados do servidor.`);
-      }
+        if (!response.ok) {
+          throw new Error(`Erro ${response.status}: Falha ao buscar dados do servidor.`);
+        }
 
-      const dadosRetornados = await response.json();
+        const dadosRetornados = await response.json();
 
-      const petsMapeados = dadosRetornados.map((pet: any) => ({
-        ...pet,
-        foto: (pet.fotos && pet.fotos.length > 0) ? pet.fotos[0].url : "/caoEgato.png"
-      }));
+        const petsMapeados = dadosRetornados.map((pet: any) => ({
+          id_pet: pet.id_pet,
+          nome: pet.nome,
+          tipo: pet.tipo ? (pet.tipo.toLowerCase() === "cachorro" ? "Cachorro" : "Gato") : "",
+          porte: pet.porte?.toLowerCase() === "medio" ? "Médio" : (pet.porte ? pet.porte.charAt(0).toUpperCase() + pet.porte.slice(1).toLowerCase() : ""),
+          idade: pet.idade ? pet.idade.charAt(0).toUpperCase() + pet.idade.slice(1).toLowerCase() : "",
+          curtidas: pet.curtidas || 0,
+          foto: (pet.fotos && pet.fotos.length > 0) ? pet.fotos[0].url : "/caoEgato.png"
+        }));
 
-      setPets(petsMapeados); 
+        setPets(petsMapeados); 
       } catch (error) {
         console.error("Erro na consulta:", error);
         setErroConsulta("Não foi possível carregar os animais. Tente novamente mais tarde.");
       } finally {
         setIsLoading(false); 
       }
-    }
+    };
 
-    buscarAnimaisDoBanco();
-  }, []); // Essa array vazia [] garante que ele só busque 1 vez quando abrir a tela
+    // Se tivermos o token, fazemos a busca
+    if (user?.token) {
+      buscarAnimaisDoBanco();
+    } else {
+      // Se não houver token (ex: usuário deslogado), paramos o loading para não travar a tela
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const filterGroups = [
     { label: "Tipo de animal:", name: "tipo", options: ["Cachorro", "Gato"] },
@@ -90,6 +96,7 @@ export default function GerenciarAnimais() {
     setFiltrosAplicados(filtrosTemporarios);
   };
 
+  // 3. Filtro simplificado, agora que os dados já chegam formatados perfeitamente
   const petsFiltrados = useMemo(() => {
     return pets.filter((pet) => {
       const matchTipo = filtrosAplicados.tipo === "" || pet.tipo === filtrosAplicados.tipo;
@@ -100,26 +107,23 @@ export default function GerenciarAnimais() {
     });
   }, [pets, filtrosAplicados]);
 
-  // 4. Atualizando a Exclusão para deletar do banco real
   const handleExcluir = async () => {
     if (!petParaExcluir) return;
 
     try {
-      // ⬇️ 1. Alterado de petParaExcluir.id para petParaExcluir.id_pet
       const response = await fetch(`http://localhost:8000/admin/pets/${petParaExcluir.id_pet}`, {
         method: "DELETE",
         headers: {
-          "Authorization": `Bearer ${user.token}`
+          "Authorization": `Bearer ${user?.token}`
         }
       });
       
       if (!response.ok) throw new Error("Erro ao excluir animal");
       
-      // ⬇️ 2. Alterado de p.id para p.id_pet
       setPets((prev) => prev.filter((p) => p.id_pet !== petParaExcluir.id_pet));
       
       alert("Animal removido com sucesso!");
-      setPetParaExcluir(null); // Fecha o modal limpando o estado
+      setPetParaExcluir(null);
     } catch (error) {
       console.error(error);
       alert("Erro de conexão com o servidor ao excluir.");
@@ -146,7 +150,7 @@ export default function GerenciarAnimais() {
                     value={filtrosTemporarios[group.name as keyof Filtros]}
                     onChange={handleSelectChange}
                     className="bg-adotai-secundaria border-[1.5px] border-adotai-textoPrincipal rounded-[15px] p-2.5 cursor-pointer outline-none font-bold text-adotai-textoPrincipal text-xs focus:ring-2 focus:ring-adotai-primaria transition-shadow"
-                    disabled={isLoading} // Desabilita os filtros enquanto carrega
+                    disabled={isLoading} 
                   >
                     <option value="">Qualquer</option>
                     {group.options.map((option) => (
@@ -173,7 +177,6 @@ export default function GerenciarAnimais() {
               Gerenciar Animais
             </h2>
             
-            {/* Tratamentos de UI: Carregando e Erro */}
             {isLoading ? (
               <div className="flex justify-center items-center h-40">
                 <p className="font-title font-bold text-xl text-adotai-textoPrincipal animate-pulse">
@@ -193,7 +196,6 @@ export default function GerenciarAnimais() {
                     key={pet.id_pet}
                     className="bg-adotai-secundaria rounded-[20px] border-[1.5px] border-adotai-textoPrincipal p-4 flex flex-col items-center shadow-sm hover:shadow-md transition-shadow"
                   >
-                    {/* Bloco da Imagem corrigido para ocupar o card inteiro (Estilo Feed) */}
                     <div className="w-full h-40 bg-white rounded-[15px] border-[1.5px] border-adotai-textoPrincipal mb-4 flex items-center justify-center overflow-hidden relative">
                       
                       {pet.foto && pet.foto !== "/caoEgato.png" ? (
@@ -209,7 +211,6 @@ export default function GerenciarAnimais() {
                         </div>
                       )}
 
-                      {/* Contador de Curtidas posicionado na imagem */}
                       <div className="absolute top-2 right-2 bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-full px-2 py-1 flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] z-10">
                         <Image src="/paw-heart-svgrepo-com.svg" alt="Ícone de patinha" width={12} height={12} />
                         <span className="font-paragraph font-bold text-xs text-adotai-textoPrincipal leading-none">
@@ -225,7 +226,6 @@ export default function GerenciarAnimais() {
                       {pet.tipo} | {pet.idade}
                     </p>
 
-                    {/* Botões do Painel Administrativo */}
                     <div className="flex flex-col xl:flex-row flex-wrap gap-3 w-full mt-auto pt-2">
                       <Link href={`/admin/cadastrar-animal/${pet.id_pet}`} className="flex-1 flex">
                         <Button variant="primary" className="w-full py-2 px-4 text-xs text-center">
