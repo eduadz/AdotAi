@@ -39,22 +39,36 @@ export default function GerenciarAnimais() {
 
   // 3. O useEffect: Dispara automaticamente quando a página abre
   useEffect(() => {
-    async function buscarAnimaisDoBanco() {
-      try {
-        // ATENÇÃO: Substitua a URL abaixo pela rota real da sua API/Backend
-        const response = await fetch("http://localhost:8000/pets"); 
-        
-        if (!response.ok) {
-          throw new Error("Erro ao buscar dados do servidor.");
+    const buscarAnimaisDoBanco = async () => {
+    try {
+      const response = await fetch("http://localhost:8000/pets", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${user?.token}` 
         }
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        console.error("Erro detalhado da API:", errorData || response.statusText);
+        
+        throw new Error(`Erro ${response.status}: Falha ao buscar dados do servidor.`);
+      }
 
-        const dadosRetornados = await response.json();
-        setPets(dadosRetornados); // Preenche o estado com os dados reais
+      const dadosRetornados = await response.json();
+
+      const petsMapeados = dadosRetornados.map((pet: any) => ({
+        ...pet,
+        foto: (pet.fotos && pet.fotos.length > 0) ? pet.fotos[0].url : "/caoEgato.png"
+      }));
+
+      setPets(petsMapeados); 
       } catch (error) {
         console.error("Erro na consulta:", error);
         setErroConsulta("Não foi possível carregar os animais. Tente novamente mais tarde.");
       } finally {
-        setIsLoading(false); // Tira a tela de carregamento, dando erro ou não
+        setIsLoading(false); 
       }
     }
 
@@ -177,31 +191,42 @@ export default function GerenciarAnimais() {
                 {petsFiltrados.map((pet) => (
                   <div
                     key={pet.id_pet}
-                    className="bg-adotai-secundaria rounded-[20px] border-[1.5px] border-adotai-textoPrincipal p-4 flex flex-col items-center shadow-sm"
+                    className="bg-adotai-secundaria rounded-[20px] border-[1.5px] border-adotai-textoPrincipal p-4 flex flex-col items-center shadow-sm hover:shadow-md transition-shadow"
                   >
+                    {/* Bloco da Imagem corrigido para ocupar o card inteiro (Estilo Feed) */}
                     <div className="w-full h-40 bg-white rounded-[15px] border-[1.5px] border-adotai-textoPrincipal mb-4 flex items-center justify-center overflow-hidden relative">
+                      
+                      {pet.foto && pet.foto !== "/caoEgato.png" ? (
+                        <Image
+                          src={pet.foto}
+                          alt={`Foto do pet ${pet.nome}`}
+                          fill
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-adotai-textoSecundario opacity-50">
+                          <span className="text-sm font-bold">Sem foto</span>
+                        </div>
+                      )}
+
+                      {/* Contador de Curtidas posicionado na imagem */}
                       <div className="absolute top-2 right-2 bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-full px-2 py-1 flex items-center gap-1.5 shadow-[2px_2px_0px_rgba(0,0,0,1)] z-10">
                         <Image src="/paw-heart-svgrepo-com.svg" alt="Ícone de patinha" width={12} height={12} />
                         <span className="font-paragraph font-bold text-xs text-adotai-textoPrincipal leading-none">
                           {pet.curtidas || 0}
                         </span>
                       </div>
-                      
-                      {pet.foto ? (
-                        <Image src={pet.foto} alt={`Foto do pet ${pet.nome}`} fill className="object-cover opacity-80" />
-                      ) : (
-                        <span className="text-adotai-textoPrincipal font-bold font-paragraph text-xs">Sem Foto</span>
-                      )}
                     </div>
                     
                     <h3 className="font-title font-bold text-xl text-adotai-textoPrincipal mb-1">
                       {pet.nome}
                     </h3>
-                    <p className="font-paragraph font-bold text-xs text-adotai-textoPrincipal mb-4">
+                    <p className="font-paragraph font-bold text-xs text-adotai-textoSecundario mb-4">
                       {pet.tipo} | {pet.idade}
                     </p>
 
-                    <div className="flex flex-col xl:flex-row flex-wrap gap-3 w-full mt-4">
+                    {/* Botões do Painel Administrativo */}
+                    <div className="flex flex-col xl:flex-row flex-wrap gap-3 w-full mt-auto pt-2">
                       <Link href={`/admin/cadastrar-animal/${pet.id_pet}`} className="flex-1 flex">
                         <Button variant="primary" className="w-full py-2 px-4 text-xs text-center">
                           Editar

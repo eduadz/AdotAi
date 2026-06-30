@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
-    setUser({ logado: false, role: null });
+    setUser({ logado: false, token: null, role: null });
     router.push('/login');
   };
 

@@ -119,7 +119,7 @@ export default function DetalhesPet() {
               <span className="font-paragraph font-bold text-adotai-textoPrincipal text-sm block">
                 Status de Adoção:
               </span>
-              <span className="font-title font-extrabold text-xl uppercase text-adotai-textoPrincipal mt-1 block">
+              <span className="font-paragraph text-sm text-adotai-textoPrincipal mt-1 block">
                 {pet.status === "disponivel" ? "Disponível para Adoção" : formatarValor("status", pet.status)}
               </span>
             </div>

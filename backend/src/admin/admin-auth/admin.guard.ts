@@ -21,9 +21,7 @@ export class AdminGuard implements CanActivate {
     }
     
     try {
-      const payload = await this.jwtService.verifyAsync(token, {
-        secret: 'chave-secreta-super-segura',
-      });
+      const payload = await this.jwtService.verifyAsync(token);
       
       // Bloqueia a requisição na hora se não for um Admin
       if (payload.role !== 'administrador') {

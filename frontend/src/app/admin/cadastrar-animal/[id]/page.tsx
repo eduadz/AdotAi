@@ -51,7 +51,7 @@ export default function EditarAnimal() {
             tipoPelagem: data.tipo_pelagem || "",
             idade: data.idade ? data.idade.charAt(0).toUpperCase() + data.idade.slice(1) : "",
             energia: data.energia === "alta" ? "Muito ativo" : (data.energia === "media" ? "Moderado" : "Calmo"),
-            comorbidade: data.comorbidade || "",
+            comorbidade: data.comorbidade ? "Sim" : "Não",
             castrado: data.castrado ? "Sim" : "Não",
             descricao: data.descricao || "",
           });
@@ -85,7 +85,7 @@ export default function EditarAnimal() {
       tipo_pelagem: animal.tipoPelagem,
       idade: animal.idade.toLowerCase(),
       energia: animal.energia === "Muito ativo" ? "alta" : (animal.energia === "Moderado" ? "media" : "baixa"),
-      comorbidade: animal.comorbidade,
+      comorbidade: animal.comorbidade === "Sim",
       castrado: animal.castrado === "Sim"
     };
 
@@ -210,7 +210,7 @@ export default function EditarAnimal() {
             
             {renderPillGroup("energia", "Energia:", ["Muito ativo", "Moderado", "Calmo"])}
             
-            {renderPillGroup("comorbidade", "Aceita animal com algum tipo de comorbidade?", ["Sim", "Não"])}
+            {renderPillGroup("comorbidade", "Possui algum tipo de comorbidade?", ["Sim", "Não"])}
             
             {renderPillGroup("castrado", "Castrado:", ["Sim", "Não"])}
 

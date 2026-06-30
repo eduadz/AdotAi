@@ -63,10 +63,12 @@ export default function Login() {
             <form className="flex flex-col gap-6" onSubmit={handleLogin}>
               <Input
                 type="email"
+                name="email"
                 placeholder="E-mail"
                 className="font-bold placeholder:font-bold"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
                 required
               />
               <Input
@@ -75,6 +77,7 @@ export default function Login() {
                 className="font-bold placeholder:font-bold"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
+                autoComplete="current-password"
                 required
               />
 

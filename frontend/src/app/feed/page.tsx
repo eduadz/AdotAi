@@ -55,10 +55,10 @@ export default function Feed() {
             tipoPelagem: pet.tipo_pelagem || "",
             idade: pet.idade ? pet.idade.charAt(0).toUpperCase() + pet.idade.slice(1) : "",
             energia: pet.energia === "alta" ? "Muito ativo" : (pet.energia === "media" ? "Moderado" : "Calmo"),
-            comorbidade: pet.comorbidade || "Não",
+            comorbidade: pet.comorbidade ? "Sim" : "Não",
             castrado: pet.castrado ? "Sim" : "Não",
             // Se o backend ainda não retorna curtidas e foto, mockamos para o visual não quebrar
-            curtidas: pet.curtidas || Math.floor(Math.random() * 50),
+            curtidas: pet.curtidas || 0,
             foto: (pet.fotos && pet.fotos.length > 0) ? pet.fotos[0].url : "/caoEgato.png",
             descricao: pet.descricao || ""
           }));

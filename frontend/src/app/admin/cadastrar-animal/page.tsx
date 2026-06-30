@@ -53,7 +53,7 @@ export default function CadastrarAnimal() {
       tipo_pelagem: animal.tipoPelagem,
       idade: animal.idade.toLowerCase(), 
       energia: animal.energia === "Muito ativo" ? "alta" : (animal.energia === "Moderado" ? "media" : "baixa"),
-      comorbidade: animal.comorbidade, 
+      comorbidade: animal.comorbidade === "Sim",
       castrado: animal.castrado === "Sim",
       foto: fotoBase64
     };
@@ -164,7 +164,7 @@ export default function CadastrarAnimal() {
             {renderPillGroup("tipoPelagem", "Tipo da pelagem:", ["Curtos", "Médio", "Longos"])}
             {renderPillGroup("idade", "Idade:", ["Filhote", "Adulto", "Idoso"])}
             {renderPillGroup("energia", "Energia:", ["Muito ativo", "Moderado", "Calmo"])}
-            {renderPillGroup("comorbidade", "Aceita animal com algum tipo de comorbidade?", ["Sim", "Não"])}
+            {renderPillGroup("comorbidade", "Possui algum tipo de comorbidade?", ["Sim", "Não"])}
             {renderPillGroup("castrado", "Castrado:", ["Sim", "Não"])}
 
             <div className="flex flex-col gap-3">

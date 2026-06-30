@@ -1,7 +1,12 @@
+"use client";
+
 import Header from "@/components/layout/Header";
 import { Input } from "@/components/ui/Input";
+import { useAuth } from "@/context/AuthContext";
+import Button from "@/components/ui/Button";
 
 export default function Perfil() {
+  const { logout } = useAuth();
   return (
     <div className="min-h-screen bg-adotai-fundo flex flex-col pb-12">
       <Header />
@@ -60,6 +65,15 @@ export default function Perfil() {
                 className="font-bold placeholder:font-bold"
               />
             </form>
+            <div className="mt-12 pt-8 border-t border-adotai-textoSecundario/20 flex justify-center">
+              <Button 
+                variant="destructive" 
+                className="px-8 py-3 text-sm font-bold"
+                onClick={logout}
+              >
+                Sair da conta
+              </Button>
+            </div>
           </div>
         </div>
       </main>

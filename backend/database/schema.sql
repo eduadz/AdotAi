@@ -46,7 +46,7 @@ CREATE TABLE adotai.pets (
     tipo_pelagem VARCHAR(30),
     idade VARCHAR(20),             -- filhote, adulto, idoso
     energia VARCHAR(20),           -- baixa, media, alta
-    comorbidade VARCHAR(100),
+    comorbidade BOOLEAN DEFAULT FALSE,
     castrado BOOLEAN DEFAULT FALSE,
     status VARCHAR(20) DEFAULT 'disponivel', -- disponivel, em_adocao, adotado
 

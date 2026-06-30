@@ -1,6 +1,7 @@
 @import url('https://fonts.googleapis.com/css2?family=Lexend+Giga:wght@400;700&family=Lexend+Zetta:wght@400;700&family=Libertinus+Keyboard&family=Life+Savers:wght@400;700;800&display=swap');
 
 @import "tailwindcss";
+@import "tailwindcss/utilities" layer(utilities);
 
 @theme {
   /* Cores */
@@ -136,4 +137,10 @@
   .adotai-badge {
     @apply inline-flex items-center gap-1 rounded-full px-2 py-1 bg-adotai-fundoCard border border-adotai-textoSecundario text-xs font-paragraph text-adotai-textoPrincipal shadow-sm;
   }
+}
+
+input::placeholder, 
+textarea::placeholder {
+  color: var(--color-adotai-textoPrincipal);
+  opacity: 0.6;
 }
