@@ -7,6 +7,7 @@ import Image from "next/image";
 import Link from "next/link";
 import MatchView from "@/components/feed/MatchView";
 import NoMatchModal from "@/components/feed/NoMatchModal";
+import Modal from "@/components/ui/Modal"; // ⬅️ 1. Importando o Modal
 
 export interface Filtros {
   tipo: string;
@@ -30,20 +31,19 @@ export interface Pet extends Filtros {
 }
 
 export default function Feed() {
-  // 1. Inicia o estado vazio
   const [pets, setPets] = useState<Pet[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // 2. Busca os dados do backend ao carregar a página
+  // ⬅️ 2. Estado para controlar o Modal de adoção no MatchMode
+  const [isAdoptModalOpen, setIsAdoptModalOpen] = useState(false);
+
   useEffect(() => {
     async function carregarPets() {
       try {
-        // Busca apenas animais com status disponível
         const response = await fetch("http://localhost:8000/pets?status=disponivel");
         if (response.ok) {
           const data = await response.json();
           
-          // 3. Mapeia o formato do banco para o formato do Frontend
           const petsMapeados = data.map((pet: any) => ({
             id_pet: pet.id_pet,
             nome: pet.nome,
@@ -57,7 +57,6 @@ export default function Feed() {
             energia: pet.energia === "alta" ? "Muito ativo" : (pet.energia === "media" ? "Moderado" : "Calmo"),
             comorbidade: pet.comorbidade ? "Sim" : "Não",
             castrado: pet.castrado ? "Sim" : "Não",
-            // Se o backend ainda não retorna curtidas e foto, mockamos para o visual não quebrar
             curtidas: pet.curtidas !== undefined ? pet.curtidas : 0,
             foto: (pet.fotos && pet.fotos.length > 0) ? pet.fotos[0].url : "/caoEgato.png",
             descricao: pet.descricao || ""
@@ -113,7 +112,7 @@ export default function Feed() {
 
   const handleCloseModal = () => {
     setShowNoMatchModal(false);
-    limparFiltros(); // Restaura a grade completa ao clicar em "Entendido"
+    limparFiltros();
   };
 
   const handleAplicarFiltros = () => {
@@ -152,6 +151,9 @@ export default function Feed() {
     });
   }, [pets, filtrosAplicados]);
 
+  // Captura o pet atual do match (se houver) para exibir o nome no modal
+  const currentMatchPet = petsFiltrados[currentMatchIndex];
+
   return (
     <div className="min-h-screen bg-adotai-fundo flex flex-col pb-12">
       <Header />
@@ -159,14 +161,14 @@ export default function Feed() {
       <main className="flex-1 flex flex-col mt-12">
         {isMatchMode && petsFiltrados.length > 0 ? (
           <MatchView 
-            pet={petsFiltrados[currentMatchIndex]}
+            pet={currentMatchPet}
             hasMultipleMatches={petsFiltrados.length > 1}
             onNextMatch={() => setCurrentMatchIndex((prev) => (prev + 1) % petsFiltrados.length)}
             onClearFilters={limparFiltros}
+            onAdopt={() => setIsAdoptModalOpen(true)} // ⬅️ 3. Passando a função de abrir o modal
           />
         ) : (
           <div className="adotai-container flex flex-col md:flex-row gap-6 w-full">
-            {/* Sidebar de Filtros */}
             <aside className="w-full md:w-[320px] lg:w-[350px] bg-adotai-fundoCard rounded-adotai border border-adotai-textoSecundario p-6 shadow-adotai-btn h-fit shrink-0">
               <h2 className="font-title font-extrabold text-2xl text-adotai-textoPrincipal mb-6 border-b-2 border-adotai-textoSecundario pb-2 border-dashed">
                 Filtros
@@ -200,7 +202,6 @@ export default function Feed() {
               </Button>
             </aside>
 
-            {/* Grade de Animais */}
             <section className="flex-1 bg-adotai-fundoCard rounded-adotai border border-adotai-textoSecundario p-6 md:p-8 shadow-adotai-btn">
               <h2 className="font-title font-extrabold text-3xl text-adotai-textoPrincipal mb-8 text-center md:text-left">
                 Amigos disponíveis
@@ -208,7 +209,6 @@ export default function Feed() {
               
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {loading ? (
-                  // ⬅️ Nova mensagem de carregamento
                   <p className="col-span-full text-center font-paragraph font-bold text-adotai-textoPrincipal mt-8 animate-pulse">
                     Buscando amiguinhos...
                   </p>
@@ -218,7 +218,6 @@ export default function Feed() {
                       key={pet.id_pet}
                       className="bg-adotai-secundaria rounded-[20px] border border-adotai-textoSecundario p-4 flex flex-col items-center shadow-sm hover:shadow-md transition-shadow"
                     >
-                      {/* Bloco da Imagem corrigido */}
                       <div className="w-full h-40 bg-white rounded-[15px] border border-adotai-textoSecundario mb-4 flex items-center justify-center overflow-hidden relative">
                         {pet.foto && pet.foto !== "/caoEgato.png" ? (
                           <Image 
@@ -228,13 +227,11 @@ export default function Feed() {
                             className="object-cover" 
                           />
                         ) : (
-                          // Espaço em branco/ícone caso não tenha foto
                           <div className="flex flex-col items-center justify-center text-adotai-textoSecundario opacity-50">
                             <span className="text-sm font-bold">Sem foto</span>
                           </div>
                         )}
                         
-                        {/* Contador de curtidas (mantido) */}
                         <div className="absolute top-2 right-2 bg-adotai-fundoCard border border-adotai-textoSecundario rounded-full px-2 py-1 flex items-center gap-1.5 shadow-sm z-10">
                           <Image src="/paw-heart-svgrepo-com.svg" alt="Patinha" width={12} height={12} />
                           <span className="font-paragraph font-bold text-xs text-adotai-textoPrincipal leading-none">
@@ -271,6 +268,31 @@ export default function Feed() {
         isOpen={showNoMatchModal} 
         onClose={handleCloseModal} 
       />
+
+      {/* ⬅️ 4. Renderizando o Modal para quando clicar em adotar no MatchView */}
+      {currentMatchPet && (
+        <Modal 
+          isOpen={isAdoptModalOpen} 
+          onClose={() => setIsAdoptModalOpen(false)} 
+          title="Formulário de Adoção"
+        >
+          <div className="flex flex-col gap-4">
+            <p className="font-paragraph font-bold text-adotai-textoPrincipal text-base">
+              Obrigado pelo seu interesse em dar um lar para <span className="text-adotai-primaria">{currentMatchPet.nome}</span>! ❤️
+            </p>
+            <p className="font-paragraph text-adotai-textoPrincipal text-sm">
+              Em breve o formulário de solicitação de adoção estará disponível aqui. Fique ligado!
+            </p>
+            
+            <div className="mt-4 flex justify-end">
+              <Button variant="primary" onClick={() => setIsAdoptModalOpen(false)} className="px-6 py-2">
+                Entendi
+              </Button>
+            </div>
+          </div>
+        </Modal>
+      )}
+
     </div>
   );
 }

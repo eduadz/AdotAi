@@ -1,18 +1,25 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
 import Button from "@/components/ui/Button";
-import { Pet } from "@/app/feed/page"; // Importamos a tipagem do arquivo principal
+import { Pet } from "@/app/feed/page"; 
 
 interface MatchViewProps {
   pet: Pet;
   hasMultipleMatches: boolean;
   onNextMatch: () => void;
   onClearFilters: () => void;
+  onAdopt: () => void; // ⬅️ 1. Adicionamos a prop aqui
 }
 
-export default function MatchView({ pet, hasMultipleMatches, onNextMatch, onClearFilters }: MatchViewProps) {
+export default function MatchView({ 
+  pet, 
+  hasMultipleMatches, 
+  onNextMatch, 
+  onClearFilters,
+  onAdopt // ⬅️ 2. Recebemos a prop no componente
+}: MatchViewProps) {
+  
   return (
     <div className="adotai-container flex flex-col items-center w-full max-w-4xl mx-auto">
       <h1 className="font-title font-extrabold text-4xl md:text-5xl text-adotai-textoPrincipal mb-4 self-start pl-4 md:pl-0">
@@ -51,11 +58,15 @@ export default function MatchView({ pet, hasMultipleMatches, onNextMatch, onClea
 
       {/* Botões do Match */}
       <div className="flex flex-row justify-center gap-6 md:gap-12 w-full px-4">
-        <Link href={`/pet/${pet.id}`}>
-          <Button variant="secondary" className="py-3 px-8 md:px-12 text-sm md:text-lg !rounded-full">
-            Adotar
-          </Button>
-        </Link>
+        
+        {/* ⬅️ 3. Removemos o <Link> e colocamos o onClick chamando o Modal */}
+        <Button 
+          variant="secondary" 
+          className="py-3 px-8 md:px-12 text-sm md:text-lg !rounded-full"
+          onClick={onAdopt} 
+        >
+          Adotar
+        </Button>
         
         {hasMultipleMatches && (
           <Button variant="secondary" className="py-3 px-8 md:px-12 text-sm md:text-lg !rounded-full" onClick={onNextMatch}>

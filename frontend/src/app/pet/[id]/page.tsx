@@ -5,6 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
+import Modal from "@/components/ui/Modal"; // ⬅️ 1. Importando o Modal
 
 interface PetDetails {
   id_pet: number;
@@ -31,6 +32,9 @@ export default function DetalhesPet() {
   const [loading, setLoading] = useState(true);
   const [likesCount, setLikesCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
+  
+  // ⬅️ 2. Estado para controlar o Modal
+  const [isModalOpen, setIsModalOpen] = useState(false); 
 
   useEffect(() => {
     async function buscarDetalhes() {
@@ -57,7 +61,6 @@ export default function DetalhesPet() {
           });
           if (responseMyLikes.ok) {
             const myLikes = await responseMyLikes.json();
-            // Verifica se o ID deste pet está na lista de curtidos do usuário
             const alreadyLiked = myLikes.some((p: any) => p.id_pet === Number(id));
             setIsLiked(alreadyLiked);
           }
@@ -75,15 +78,13 @@ export default function DetalhesPet() {
   }, [id, router]);
 
   const handleToggleLike = async () => {
-    const token = localStorage.getItem("token"); // Recupera o token de autenticação
+    const token = localStorage.getItem("token"); 
     
     if (!token) {
       alert("Você precisa estar logado para curtir um pet!");
-      // Opcional: Redirecionar para tela de login
       return;
     }
 
-    // --- ATUALIZAÇÃO OTIMISTA (Interface atualiza antes do backend) ---
     const previousIsLiked = isLiked;
     setIsLiked(!isLiked);
     setLikesCount((prev) => isLiked ? prev - 1 : prev + 1);
@@ -103,15 +104,12 @@ export default function DetalhesPet() {
       }
     } catch (error) {
       console.error("Erro ao registrar curtida:", error);
-      // Se falhar, reverte os estados para como estavam antes
       setIsLiked(previousIsLiked);
       setLikesCount((prev) => previousIsLiked ? prev + 1 : prev - 1);
       alert("Não foi possível curtir o pet no momento.");
     }
   };
 
-
-  // Função auxiliar para formatar os valores do banco em texto legível com acentos
   const formatarValor = (campo: string, valor: any) => {
     if (valor === undefined || valor === null || valor === "") return "Não informado";
     if (typeof valor === "boolean") return valor ? "Sim" : "Não";
@@ -152,7 +150,6 @@ export default function DetalhesPet() {
       <Header />
 
       <main className="flex-1 adotai-container w-full mt-12">
-        {/* Botão Voltar */}
         <button
           onClick={() => router.back()}
           className="mb-6 flex items-center gap-2 font-title font-bold text-adotai-textoPrincipal hover:underline text-lg focus:outline-none"
@@ -160,10 +157,8 @@ export default function DetalhesPet() {
           ← Voltar para o feed
         </button>
 
-        {/* Card Principal Split (Dois Lados) */}
         <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-6 md:p-10 shadow-sm flex flex-col md:flex-row gap-8 lg:gap-12">
           
-          {/* Lado Esquerdo: Imagem e Destaques básicos */}
           <div className="w-full md:w-2/5 flex flex-col gap-4">
             <div className="w-full aspect-square bg-white rounded-[25px] border-[1.5px] border-adotai-textoPrincipal relative overflow-hidden shadow-sm">
               <Image
@@ -178,7 +173,7 @@ export default function DetalhesPet() {
                 className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm border-[1.5px] border-adotai-textoPrincipal rounded-full px-4 py-2 flex items-center gap-2 shadow-md hover:bg-white transition-all focus:outline-none"
               >
                 <span className="text-xl">
-                  {isLiked ? "❤️" : "🤍"} {/* Pode trocar por um ícone SVG */}
+                  {isLiked ? "❤️" : "🤍"}
                 </span>
                 <span className="font-title font-bold text-adotai-textoPrincipal text-lg">
                   {likesCount}
@@ -196,7 +191,6 @@ export default function DetalhesPet() {
             </div>
           </div>
 
-          {/* Lado Direito: Nome, Características e Descrição */}
           <div className="w-full md:w-3/5 flex flex-col justify-between gap-6">
             <div>
               <h1 className="text-4xl md:text-5xl font-title font-extrabold text-adotai-textoPrincipal mb-2">
@@ -206,7 +200,6 @@ export default function DetalhesPet() {
                 {formatarValor("tipo", pet.tipo)} • {formatarValor("idade", pet.idade)}
               </p>
 
-              {/* Grid de Especificações Técnias */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-[#E1E8D8]/60 p-5 rounded-[20px] border border-adotai-textoSecundario/40 mb-6">
                 <div>
                   <span className="text-xs text-adotai-textoSecundario block font-paragraph font-bold">RAÇA:</span>
@@ -238,7 +231,6 @@ export default function DetalhesPet() {
                 </div>
               </div>
 
-              {/* Seção de Descrição/História */}
               <div className="flex flex-col gap-2">
                 <h3 className="font-title font-bold text-xl text-adotai-textoPrincipal">
                   Conheça a história de {pet.nome}
@@ -249,21 +241,42 @@ export default function DetalhesPet() {
               </div>
             </div>
 
-            {/* Ação de Solicitação de Adoção */}
             <div className="flex justify-end mt-4">
               <Button
                 variant="secondary"
                 className="w-full sm:w-auto px-12 py-4 text-xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal hover:bg-adotai-primaria transition-colors"
-                onClick={() => alert("Em breve: Abertura do formulário de solicitação de adoção!")}
+                onClick={() => setIsModalOpen(true)} // ⬅️ 3. Abre o modal ao clicar
               >
                 Quero Adotar! 🐾
               </Button>
             </div>
 
           </div>
-
         </div>
       </main>
+
+      {/* ⬅️ 4. Renderizando o Modal no final da tela */}
+      <Modal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)} 
+        title="Formulário de Adoção"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="font-paragraph font-bold text-adotai-textoPrincipal text-base">
+            Obrigado pelo seu interesse em dar um lar para <span className="text-adotai-primaria">{pet.nome}</span>! ❤️
+          </p>
+          <p className="font-paragraph text-adotai-textoPrincipal text-sm">
+            Em breve o formulário de solicitação de adoção estará disponível aqui. Fique ligado!
+          </p>
+          
+          <div className="mt-4 flex justify-end">
+            <Button variant="primary" onClick={() => setIsModalOpen(false)} className="px-6 py-2">
+              Entendi
+            </Button>
+          </div>
+        </div>
+      </Modal>
+
     </div>
   );
 }
