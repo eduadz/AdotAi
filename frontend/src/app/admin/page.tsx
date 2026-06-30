@@ -53,7 +53,7 @@ export default function PainelAdmin() {
                   variant="primary" 
                   className="w-full py-5 text-2xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal hover:bg-adotai-primaria/90 transition-all"
                 >
-                  Pedidos de adoção
+                  Pedidos de Cadastro
                 </Button>
               </Link>
 

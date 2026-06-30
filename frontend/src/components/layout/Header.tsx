@@ -41,14 +41,17 @@ export default function Header() {
           </Button>
         </Link>
 
-        <Link href="/feed">
-          <Button variant="primary" className="py-2 px-6 text-sm">
-            Adotar
-          </Button>
-        </Link>
+        {/* Oculta o botão Adotar se for administrador */}
+        {user?.role !== 'administrador' && (
+          <Link href="/feed">
+            <Button variant="primary" className="py-2 px-6 text-sm">
+              Adotar
+            </Button>
+          </Link>
+        )}
         
         {/* Renderização Condicional: Admin, Perfil ou Login */}
-        {user.logado ? (
+        {user?.logado ? (
           user.role === 'administrador' ? (
             <Link href="/admin">
               <Button variant="primary" className="py-2 px-6 text-sm">
