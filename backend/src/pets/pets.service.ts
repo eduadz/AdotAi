@@ -52,13 +52,17 @@ export class PetsService {
 
     // Faz um LEFT JOIN agrupando as fotos do animal para evitar múltiplas queries
     const queryStr = `
-      SELECT p.*, COALESCE(
-        json_agg(
-          json_build_object('id_foto', pf.id_foto, 'url', pf.url)
-        ) FILTER (WHERE pf.id_foto IS NOT NULL), '[]'
-      ) as fotos
+      SELECT 
+        p.*, 
+        COUNT(DISTINCT pl.id_usuario)::int as curtidas,
+        COALESCE(
+          json_agg(
+            DISTINCT jsonb_build_object('id_foto', pf.id_foto, 'url', pf.url)
+          ) FILTER (WHERE pf.id_foto IS NOT NULL), '[]'
+        ) as fotos
       FROM adotai.pets p
       LEFT JOIN adotai.pet_fotos pf ON p.id_pet = pf.id_pet
+      LEFT JOIN adotai.pet_likes pl ON p.id_pet = pl.id_pet
       ${whereClause}
       GROUP BY p.id_pet
     `;
@@ -87,5 +91,25 @@ export class PetsService {
       throw new NotFoundException('Animal não encontrado.');
     }
     return rows[0];
+  }
+
+  async likePet(petId: number, userId: number) {
+    // Insere ignorando se já existir para evitar duplicados (ON CONFLICT DO NOTHING se tiver PK composta)
+    const queryStr = `
+      INSERT INTO adotai.pet_likes (id_usuario, id_pet) 
+      VALUES ($1, $2)
+      ON CONFLICT DO NOTHING
+    `;
+    await this.db.query(queryStr, [userId, petId]);
+    return { success: true };
+  }
+
+  async unlikePet(petId: number, userId: number) {
+    const queryStr = `
+      DELETE FROM adotai.pet_likes 
+      WHERE id_usuario = $1 AND id_pet = $2
+    `;
+    await this.db.query(queryStr, [userId, petId]);
+    return { success: true };
   }
 }

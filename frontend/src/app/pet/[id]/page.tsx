@@ -29,6 +29,8 @@ export default function DetalhesPet() {
   const router = useRouter();
   const [pet, setPet] = useState<PetDetails | null>(null);
   const [loading, setLoading] = useState(true);
+  const [likesCount, setLikesCount] = useState(0);
+  const [isLiked, setIsLiked] = useState(false);
 
   useEffect(() => {
     async function buscarDetalhes() {
@@ -41,6 +43,26 @@ export default function DetalhesPet() {
           alert("Aviso: Animal não encontrado.");
           router.push("/feed");
         }
+
+        const responseLikes = await fetch(`http://localhost:8000/pets/${id}/likes`);
+        if (responseLikes.ok) {
+          const likesData = await responseLikes.json();
+          setLikesCount(likesData.count);
+        }
+
+        const token = localStorage.getItem("token");
+        if (token) {
+          const responseMyLikes = await fetch(`http://localhost:8000/users/me/likes`, {
+            headers: { "Authorization": `Bearer ${token}` }
+          });
+          if (responseMyLikes.ok) {
+            const myLikes = await responseMyLikes.json();
+            // Verifica se o ID deste pet está na lista de curtidos do usuário
+            const alreadyLiked = myLikes.some((p: any) => p.id_pet === Number(id));
+            setIsLiked(alreadyLiked);
+          }
+        }
+
       } catch (error) {
         console.error("Erro ao buscar detalhes do pet:", error);
         alert("Erro de conexão com o servidor.");
@@ -51,6 +73,43 @@ export default function DetalhesPet() {
 
     if (id) buscarDetalhes();
   }, [id, router]);
+
+  const handleToggleLike = async () => {
+    const token = localStorage.getItem("token"); // Recupera o token de autenticação
+    
+    if (!token) {
+      alert("Você precisa estar logado para curtir um pet!");
+      // Opcional: Redirecionar para tela de login
+      return;
+    }
+
+    // --- ATUALIZAÇÃO OTIMISTA (Interface atualiza antes do backend) ---
+    const previousIsLiked = isLiked;
+    setIsLiked(!isLiked);
+    setLikesCount((prev) => isLiked ? prev - 1 : prev + 1);
+
+    try {
+      const method = previousIsLiked ? "DELETE" : "POST";
+      const response = await fetch(`http://localhost:8000/pets/${id}/like`, {
+        method,
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha na requisição");
+      }
+    } catch (error) {
+      console.error("Erro ao registrar curtida:", error);
+      // Se falhar, reverte os estados para como estavam antes
+      setIsLiked(previousIsLiked);
+      setLikesCount((prev) => previousIsLiked ? prev + 1 : prev - 1);
+      alert("Não foi possível curtir o pet no momento.");
+    }
+  };
+
 
   // Função auxiliar para formatar os valores do banco em texto legível com acentos
   const formatarValor = (campo: string, valor: any) => {
@@ -98,7 +157,7 @@ export default function DetalhesPet() {
           onClick={() => router.back()}
           className="mb-6 flex items-center gap-2 font-title font-bold text-adotai-textoPrincipal hover:underline text-lg focus:outline-none"
         >
-          ← Voltar para a listagem
+          ← Voltar para o feed
         </button>
 
         {/* Card Principal Split (Dois Lados) */}
@@ -113,6 +172,18 @@ export default function DetalhesPet() {
                 className="object-cover opacity-90"
                 priority
               />
+
+              <button 
+                onClick={handleToggleLike}
+                className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm border-[1.5px] border-adotai-textoPrincipal rounded-full px-4 py-2 flex items-center gap-2 shadow-md hover:bg-white transition-all focus:outline-none"
+              >
+                <span className="text-xl">
+                  {isLiked ? "❤️" : "🤍"} {/* Pode trocar por um ícone SVG */}
+                </span>
+                <span className="font-title font-bold text-adotai-textoPrincipal text-lg">
+                  {likesCount}
+                </span>
+              </button>
             </div>
             
             <div className="bg-adotai-secundaria rounded-[20px] border border-adotai-textoSecundario p-4 text-center">

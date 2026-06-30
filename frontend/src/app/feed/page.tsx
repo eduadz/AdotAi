@@ -58,7 +58,7 @@ export default function Feed() {
             comorbidade: pet.comorbidade ? "Sim" : "Não",
             castrado: pet.castrado ? "Sim" : "Não",
             // Se o backend ainda não retorna curtidas e foto, mockamos para o visual não quebrar
-            curtidas: pet.curtidas || 0,
+            curtidas: pet.curtidas !== undefined ? pet.curtidas : 0,
             foto: (pet.fotos && pet.fotos.length > 0) ? pet.fotos[0].url : "/caoEgato.png",
             descricao: pet.descricao || ""
           }));

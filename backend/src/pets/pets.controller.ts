@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query, ParseIntPipe } from '@nestjs/common';
+import { Controller, Get, Param, Query, ParseIntPipe, Post, Delete, Headers, UnauthorizedException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
 import { PetsService } from './pets.service';
 import { FilterPetsDto } from './dto/filter-pets.dto';
@@ -32,5 +32,41 @@ export class PetsController {
   @ApiResponse({ status: 404, description: 'Animal não encontrado.' })
   findOne(@Param('id', ParseIntPipe) id: number) {
     return this.petsService.findOne(id);
+  }
+
+  @Post(':id/like')
+  @ApiOperation({ summary: 'Curtir um pet' })
+  async likePet(@Param('id', ParseIntPipe) id: number, @Headers('authorization') authHeader: string) {
+    const userId = this.extractUserIdFromToken(authHeader);
+    return this.petsService.likePet(id, userId);
+  }
+
+  @Delete(':id/like')
+  @ApiOperation({ summary: 'Remover curtida de um pet' })
+  async unlikePet(@Param('id', ParseIntPipe) id: number, @Headers('authorization') authHeader: string) {
+    const userId = this.extractUserIdFromToken(authHeader);
+    return this.petsService.unlikePet(id, userId);
+  }
+
+private extractUserIdFromToken(authHeader: string): number {
+    if (!authHeader) throw new UnauthorizedException('Token não fornecido');
+    try {
+      const token = authHeader.split(' ')[1];
+      const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+      
+      // 🕵️ Log temporário para descobrirmos a estrutura do seu token
+      console.log('Payload do JWT recebido:', payload);
+
+      // Tenta extrair usando as chaves mais comuns do mercado
+      const userId = payload.sub || payload.id || payload.id_usuario || payload.userId;
+      
+      if (!userId) {
+        throw new UnauthorizedException('ID do usuário não encontrado dentro do token.');
+      }
+      
+      return Number(userId);
+    } catch (error) {
+      throw new UnauthorizedException('Token inválido ou mal formatado.');
+    }
   }
 }
