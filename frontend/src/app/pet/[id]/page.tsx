@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
-import Modal from "@/components/ui/Modal";
+import Modal from "@/components/ui/Modal"; // ⬅️ 1. Importando o Modal
 
 interface PetDetails {
   id_pet: number;
@@ -37,7 +37,7 @@ export default function DetalhesPet() {
   useEffect(() => {
     async function buscarDetalhes() {
       try {
-        const response = await fetch(`http://localhost:8000/pets/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}`);
         if (response.ok) {
           const data = await response.json();
           setPet(data);
@@ -46,7 +46,7 @@ export default function DetalhesPet() {
           router.push("/feed");
         }
 
-        const responseLikes = await fetch(`http://localhost:8000/pets/${id}/likes`);
+        const responseLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/likes`);
         if (responseLikes.ok) {
           const likesData = await responseLikes.json();
           setLikesCount(likesData.count);
@@ -54,7 +54,7 @@ export default function DetalhesPet() {
 
         const token = localStorage.getItem("token");
         if (token) {
-          const responseMyLikes = await fetch(`http://localhost:8000/users/me/likes`, {
+          const responseMyLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/users/me/likes`, {
             headers: { "Authorization": `Bearer ${token}` }
           });
           if (responseMyLikes.ok) {
@@ -75,13 +75,11 @@ export default function DetalhesPet() {
     if (id) buscarDetalhes();
   }, [id, router]);
 
-  // Modificado: Agora redireciona para a página de login se não houver token
   const handleToggleLike = async () => {
     const token = localStorage.getItem("token");
 
     if (!token) {
       alert("Você precisa estar logado para curtir um pet!");
-      router.push("/login"); // ⬅️ Redireciona para o login
       return;
     }
 
@@ -91,7 +89,7 @@ export default function DetalhesPet() {
 
     try {
       const method = previousIsLiked ? "DELETE" : "POST";
-      const response = await fetch(`http://localhost:8000/pets/${id}/like`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/like`, {
         method,
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -110,7 +108,6 @@ export default function DetalhesPet() {
     }
   };
 
-  // Novo: Função que valida o login antes de abrir o modal de adoção
   const handleQueroAdotar = () => {
     const token = localStorage.getItem("token");
 
@@ -258,7 +255,7 @@ export default function DetalhesPet() {
               <Button
                 variant="secondary"
                 className="w-full sm:w-auto px-12 py-4 text-xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal hover:bg-adotai-primaria transition-colors"
-                onClick={handleQueroAdotar} // ⬅️ Modificado: Aponta para a nova função de validação
+                onClick={handleQueroAdotar}
               >
                 Quero Adotar! 🐾
               </Button>

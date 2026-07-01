@@ -32,7 +32,7 @@ export default function PedidosAdocao() {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch(`http://localhost:8000/admin/pets/${pedidoSelecionado.id}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/pets/${pedidoSelecionado.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -73,7 +73,7 @@ export default function PedidosAdocao() {
     const token = localStorage.getItem("token");
 
     try {
-      const response = await fetch(`http://localhost:8000/admin/pets/${pedidoSelecionado.id}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/pets/${pedidoSelecionado.id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
