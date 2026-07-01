@@ -8,7 +8,7 @@ import { useState } from "react";
 type Pedido = {
   id: number;
   animal: string;
-  adotante: string;
+  tutor: string;
   data: string;
   status: "Pendente" | "Aceito" | "Recusado";
 };
@@ -16,35 +16,89 @@ type Pedido = {
 export default function PedidosAdocao() {
   // Mock de dados simulando o retorno do banco de dados
   const [pedidos, setPedidos] = useState<Pedido[]>([
-    { id: 1, animal: "Caramelo", adotante: "Maria Silva", data: "27/06/2026", status: "Pendente" },
-    { id: 2, animal: "Luna", adotante: "João Oliveira", data: "26/06/2026", status: "Pendente" },
-    { id: 3, animal: "Thor", adotante: "Ana Costa", data: "25/06/2026", status: "Pendente" },
+    { id: 1, animal: "Caramelo", tutor: "Maria Silva", data: "27/06/2026", status: "Pendente" },
+    { id: 2, animal: "Luna", tutor: "João Oliveira", data: "26/06/2026", status: "Pendente" },
+    { id: 3, animal: "Thor", tutor: "Ana Costa", data: "25/06/2026", status: "Pendente" },
   ]);
 
   // Estado para controlar qual pedido está selecionado no Modal
   const [pedidoSelecionado, setPedidoSelecionado] = useState<Pedido | null>(null);
 
   // Funções para lidar com as ações do modal
-  const handleAceitar = () => {
+  const handleAceitar = async () => {
     if (!pedidoSelecionado) return;
-    
+
+    // Recupera o token salvo no momento do login
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`http://localhost:8000/admin/pets/${pedidoSelecionado.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // Envia o token recuperado
+        },
+        body: JSON.stringify({ status: "Aceito" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao atualizar o status no servidor.");
+      }
+
+      // Se a API aceitou, atualiza o estado local para mudar o visual da tela
+      setPedidos((prev) =>
+        prev.map((p) => (p.id === pedidoSelecionado.id ? { ...p, status: "Aceito" } : p))
+      );
+
+      alert(`Pedido de ${pedidoSelecionado.tutor} para adotar ${pedidoSelecionado.animal} foi ACEITO!`);
+    } catch (error) {
+      console.error("Erro ao persistir os dados:", error);
+      alert("Ocorreu um erro ao salvar o pedido. Tente novamente.");
+    } finally {
+      setPedidoSelecionado(null); // Fecha o modal
+    }
+
     // Atualiza o status na lista
-    setPedidos((prev) =>
-      prev.map((p) => (p.id === pedidoSelecionado.id ? { ...p, status: "Aceito" } : p))
-    );
-    alert(`Pedido de ${pedidoSelecionado.adotante} para adotar ${pedidoSelecionado.animal} foi ACEITO!`);
-    setPedidoSelecionado(null); // Fecha o modal
+    // setPedidos((prev) =>
+    //   prev.map((p) => (p.id === pedidoSelecionado.id ? { ...p, status: "Aceito" } : p))
+    // );
+    // alert(`Pedido de ${pedidoSelecionado.tutor} para adotar ${pedidoSelecionado.animal} foi ACEITO!`);
+    // setPedidoSelecionado(null); // Fecha o modal
   };
 
-  const handleRecusar = () => {
+  const handleRecusar = async () => {
     if (!pedidoSelecionado) return;
-    
-    // Atualiza o status na lista
-    setPedidos((prev) =>
-      prev.map((p) => (p.id === pedidoSelecionado.id ? { ...p, status: "Recusado" } : p))
-    );
-    alert(`Pedido de ${pedidoSelecionado.adotante} para adotar ${pedidoSelecionado.animal} foi RECUSADO.`);
-    setPedidoSelecionado(null); // Fecha o modal
+
+    // Recupera o token salvo no momento do login
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await fetch(`http://localhost:8000/admin/pets/${pedidoSelecionado.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}` // Envia o token recuperado
+        },
+        // Mudamos o payload para o status que o backend espera ao recusar
+        body: JSON.stringify({ status: "Recusado" }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao recusar o status no servidor.");
+      }
+
+      // Se a API aceitou, atualiza o estado local para "Recusado"
+      setPedidos((prev) =>
+        prev.map((p) => (p.id === pedidoSelecionado.id ? { ...p, status: "Recusado" } : p))
+      );
+
+      alert(`Pedido de ${pedidoSelecionado.tutor} para adotar ${pedidoSelecionado.animal} foi RECUSADO.`);
+    } catch (error) {
+      console.error("Erro ao recusar o pedido:", error);
+      alert("Ocorreu um erro ao recusar o pedido. Tente novamente.");
+    } finally {
+      setPedidoSelecionado(null); // Fecha o modal
+    }
   };
 
   return (
@@ -54,57 +108,55 @@ export default function PedidosAdocao() {
       <main className="flex-1 flex flex-col items-start justify-start w-full mt-8">
         <div className="adotai-container w-full">
           <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-8 md:p-12 w-full max-w-4xl shadow-sm mx-auto">
-          
-          <div className="mb-10 text-center">
-            <h1 className="text-4xl md:text-5xl font-title font-bold text-adotai-textoPrincipal mb-2">
-              Pedidos de Adoção
-            </h1>
-            <p className="font-paragraph font-bold text-adotai-textoPrincipal text-sm md:text-base">
-              Selecione um pedido para avaliá-lo.
-            </p>
-          </div>
 
-          {/* Lista de Pedidos */}
-          <div className="flex flex-col gap-4">
-            {pedidos.map((pedido) => (
-              <div 
-                key={pedido.id}
-                onClick={() => pedido.status === "Pendente" && setPedidoSelecionado(pedido)}
-                className={`flex flex-col sm:flex-row justify-between items-center p-5 rounded-[20px] border-[1.5px] border-adotai-textoPrincipal transition-all ${
-                  pedido.status === "Pendente" 
-                    ? "bg-[#E1E8D8] cursor-pointer hover:bg-adotai-primaria/50 hover:translate-y-[-2px] shadow-[2px_2px_0px_rgba(0,0,0,1)]" 
-                    : "bg-gray-200 opacity-60 cursor-not-allowed"
-                }`}
-              >
-                <div className="flex flex-col gap-1 w-full">
-                  <span className="font-title font-bold text-xl text-adotai-textoPrincipal">
-                    Animal: {pedido.animal}
-                  </span>
-                  <span className="font-paragraph font-bold text-sm text-adotai-textoPrincipal">
-                    Adotante: {pedido.adotante}
-                  </span>
-                  <span className="font-paragraph font-bold text-sm text-adotai-textoSecundario">
-                    Data: {pedido.data}
-                  </span>
-                </div>
-                
-                <div className="mt-4 sm:mt-0">
-                  <span className={`px-4 py-2 rounded-full font-paragraph font-bold text-sm border-[1.5px] border-adotai-textoPrincipal ${
-                    pedido.status === "Pendente" ? "bg-yellow-300" :
-                    pedido.status === "Aceito" ? "bg-green-400" : "bg-red-400 text-white"
-                  }`}>
-                    {pedido.status}
-                  </span>
-                </div>
-              </div>
-            ))}
-
-            {pedidos.length === 0 && (
-              <p className="text-center font-paragraph font-bold text-adotai-textoPrincipal mt-8">
-                Nenhum pedido encontrado.
+            <div className="mb-10 text-center">
+              <h1 className="text-4xl md:text-5xl font-title font-bold text-adotai-textoPrincipal mb-2">
+                Pedidos de Cadastro
+              </h1>
+              <p className="font-paragraph font-bold text-adotai-textoPrincipal text-sm md:text-base">
+                Selecione um pedido para avaliá-lo.
               </p>
-            )}
-          </div>
+            </div>
+
+            {/* Lista de Pedidos */}
+            <div className="flex flex-col gap-4">
+              {pedidos.map((pedido) => (
+                <div
+                  key={pedido.id}
+                  onClick={() => pedido.status === "Pendente" && setPedidoSelecionado(pedido)}
+                  className={`flex flex-col sm:flex-row justify-between items-center p-5 rounded-[20px] border-[1.5px] border-adotai-textoPrincipal transition-all ${pedido.status === "Pendente"
+                      ? "bg-[#E1E8D8] cursor-pointer hover:bg-adotai-primaria/50 hover:translate-y-[-2px] shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                      : "bg-gray-200 opacity-60 cursor-not-allowed"
+                    }`}
+                >
+                  <div className="flex flex-col gap-1 w-full">
+                    <span className="font-title font-bold text-xl text-adotai-textoPrincipal">
+                      Animal: {pedido.animal}
+                    </span>
+                    <span className="font-paragraph font-bold text-sm text-adotai-textoPrincipal">
+                      tutor: {pedido.tutor}
+                    </span>
+                    <span className="font-paragraph font-bold text-sm text-adotai-textoSecundario">
+                      Data: {pedido.data}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 sm:mt-0">
+                    <span className={`px-4 py-2 rounded-full font-paragraph font-bold text-sm border-[1.5px] border-adotai-textoPrincipal ${pedido.status === "Pendente" ? "bg-yellow-300" :
+                        pedido.status === "Aceito" ? "bg-green-400" : "bg-red-400 text-white"
+                      }`}>
+                      {pedido.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+
+              {pedidos.length === 0 && (
+                <p className="text-center font-paragraph font-bold text-adotai-textoPrincipal mt-8">
+                  Nenhum pedido encontrado.
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </main>
@@ -113,14 +165,14 @@ export default function PedidosAdocao() {
       {pedidoSelecionado && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-8 max-w-md w-full shadow-[8px_8px_0px_rgba(0,0,0,1)]">
-            
+
             <h2 className="text-3xl font-title font-bold text-adotai-textoPrincipal mb-6 text-center">
               Avaliar Pedido
             </h2>
-            
+
             <div className="flex flex-col gap-2 mb-8 bg-[#E1E8D8] p-4 rounded-[15px] border-[1.5px] border-adotai-textoPrincipal">
               <p className="font-paragraph font-bold text-adotai-textoPrincipal">
-                <span className="text-adotai-textoSecundario">Adotante:</span> {pedidoSelecionado.adotante}
+                <span className="text-adotai-textoSecundario">Tutor:</span> {pedidoSelecionado.tutor}
               </p>
               <p className="font-paragraph font-bold text-adotai-textoPrincipal">
                 <span className="text-adotai-textoSecundario">Animal:</span> {pedidoSelecionado.animal}
@@ -128,23 +180,23 @@ export default function PedidosAdocao() {
             </div>
 
             <div className="flex flex-col gap-4">
-              <Button 
-                variant="primary" 
+              <Button
+                variant="primary"
                 onClick={handleAceitar}
                 className="w-full py-4 text-xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal bg-[#8CBFB8] hover:bg-green-400 transition-colors"
               >
                 Aceitar pedido
               </Button>
-              
-              <Button 
-                variant="secondary" 
+
+              <Button
+                variant="secondary"
                 onClick={handleRecusar}
                 className="w-full py-4 text-xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal hover:bg-red-400 transition-colors"
               >
                 Recusar pedido
               </Button>
 
-              <button 
+              <button
                 onClick={() => setPedidoSelecionado(null)}
                 className="mt-2 font-paragraph font-bold text-sm text-adotai-textoPrincipal underline hover:opacity-70"
               >

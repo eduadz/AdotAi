@@ -1,45 +1,50 @@
-import { Controller, Get, Patch, Param, ParseIntPipe } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
-import { AdminAdoptionRequestsService } from './admin-adoption-requests.service';
+import { Controller, Post, Get, Patch, Param, Body, ParseIntPipe, Request, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiBody } from '@nestjs/swagger';
+import { AdoptionRequestsService } from './adoption-requests.service';
+import { CreateAdoptionRequestDto } from './dto/create-adoption-request.dto';
+import { AuthGuard } from '../auth/auth.guard';
 
-@ApiTags('Admin - Pedidos de Adoção')
-@Controller('admin')
-export class AdminAdoptionRequestsController {
-  constructor(private readonly adminAdoptionRequestsService: AdminAdoptionRequestsService) {}
+@ApiTags('Pedidos de Adoção')
+@UseGuards(AuthGuard)
+@Controller()
+export class AdoptionRequestsController {
+  constructor(private readonly adoptionRequestsService: AdoptionRequestsService) { }
 
-  @Get('adoption-requests')
-  @ApiOperation({ summary: 'Listar todos os pedidos de adoção' })
-  @ApiResponse({ status: 200, description: 'Lista de pedidos retornada com sucesso.' })
-  findAll() {
-    return this.adminAdoptionRequestsService.findAll();
-  }
-
-  @Get('pets/:id/adoption-requests')
-  @ApiOperation({ summary: 'Listar pedidos de adoção de um animal específico' })
+  @Post('pets/:id/adoption-requests')
+  @ApiOperation({ summary: 'Solicitar adoção de um animal' })
   @ApiParam({ name: 'id', description: 'ID do animal', example: 1 })
-  @ApiResponse({ status: 200, description: 'Lista de pedidos do animal retornada com sucesso.' })
+  @ApiBody({ type: CreateAdoptionRequestDto })
+  @ApiResponse({ status: 201, description: 'Pedido de adoção criado com sucesso.' })
+  @ApiResponse({ status: 409, description: 'Já existe um pedido de adoção deste usuário para este animal.' })
   @ApiResponse({ status: 404, description: 'Animal não encontrado.' })
-  findByPet(@Param('id', ParseIntPipe) petId: number) {
-    return this.adminAdoptionRequestsService.findByPet(petId);
+  create(@Request() req,
+    @Param('id', ParseIntPipe) petId: number,
+    @Body() dto: CreateAdoptionRequestDto,
+  ) {
+    // Parte gustavo — obter userId do token JWT
+    const userId = req.user.sub;
+    return this.adoptionRequestsService.create(userId, petId, dto);
   }
 
-  @Patch('adoption-requests/:id/accept')
-  @ApiOperation({ summary: 'Aceitar pedido de adoção' })
-  @ApiParam({ name: 'id', description: 'ID do pedido de adoção', example: 1 })
-  @ApiResponse({ status: 200, description: 'Pedido aceito com sucesso.' })
-  @ApiResponse({ status: 404, description: 'Pedido não encontrado.' })
-  @ApiResponse({ status: 400, description: 'Pedido não pode ser aceito (status não é pendente).' })
-  accept(@Param('id', ParseIntPipe) requestId: number) {
-    return this.adminAdoptionRequestsService.accept(requestId);
+  @Get('users/me/adoption-requests')
+  @ApiOperation({ summary: 'Ver pedidos de adoção do usuário autenticado' })
+  @ApiResponse({ status: 200, description: 'Lista de pedidos de adoção retornada com sucesso.' })
+  @ApiResponse({ status: 401, description: 'Não autenticado.' })
+  findByUser(@Request() req) {
+    // Parte gustavo — obter userId do token JWT
+    const userId = req.user.sub;
+    return this.adoptionRequestsService.findByUser(userId);
   }
 
-  @Patch('adoption-requests/:id/reject')
-  @ApiOperation({ summary: 'Recusar pedido de adoção' })
+  @Patch('adoption-requests/:id/cancel')
+  @ApiOperation({ summary: 'Cancelar pedido de adoção' })
   @ApiParam({ name: 'id', description: 'ID do pedido de adoção', example: 1 })
-  @ApiResponse({ status: 200, description: 'Pedido recusado com sucesso.' })
-  @ApiResponse({ status: 404, description: 'Pedido não encontrado.' })
-  @ApiResponse({ status: 400, description: 'Pedido não pode ser recusado (status não é pendente).' })
-  reject(@Param('id', ParseIntPipe) requestId: number) {
-    return this.adminAdoptionRequestsService.reject(requestId);
+  @ApiResponse({ status: 200, description: 'Pedido cancelado com sucesso.' })
+  @ApiResponse({ status: 404, description: 'Pedido de adoção não encontrado.' })
+  @ApiResponse({ status: 400, description: 'Pedido não pode ser cancelado (status não é pendente).' })
+  cancel(@Request() req, @Param('id', ParseIntPipe) requestId: number) {
+    // Parte gustavo — obter userId do token JWT
+    const userId = req.user.sub;
+    return this.adoptionRequestsService.cancel(userId, requestId);
   }
 }
