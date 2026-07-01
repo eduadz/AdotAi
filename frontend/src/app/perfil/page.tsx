@@ -27,7 +27,7 @@ export default function Perfil() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("http://localhost:8000/users/me", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/users/me`, {
           headers: {
             "Authorization": `Bearer ${user?.token}`,
           },
@@ -90,7 +90,7 @@ export default function Perfil() {
     };
 
     try {
-      const response = await fetch("http://localhost:8000/users/me", {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/users/me`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

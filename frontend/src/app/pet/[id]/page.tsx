@@ -39,7 +39,7 @@ export default function DetalhesPet() {
   useEffect(() => {
     async function buscarDetalhes() {
       try {
-        const response = await fetch(`http://localhost:8000/pets/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}`);
         if (response.ok) {
           const data = await response.json();
           setPet(data);
@@ -48,7 +48,7 @@ export default function DetalhesPet() {
           router.push("/feed");
         }
 
-        const responseLikes = await fetch(`http://localhost:8000/pets/${id}/likes`);
+        const responseLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/likes`);
         if (responseLikes.ok) {
           const likesData = await responseLikes.json();
           setLikesCount(likesData.count);
@@ -56,7 +56,7 @@ export default function DetalhesPet() {
 
         const token = localStorage.getItem("token");
         if (token) {
-          const responseMyLikes = await fetch(`http://localhost:8000/users/me/likes`, {
+          const responseMyLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/users/me/likes`, {
             headers: { "Authorization": `Bearer ${token}` }
           });
           if (responseMyLikes.ok) {
@@ -91,7 +91,7 @@ export default function DetalhesPet() {
 
     try {
       const method = previousIsLiked ? "DELETE" : "POST";
-      const response = await fetch(`http://localhost:8000/pets/${id}/like`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/like`, {
         method,
         headers: {
           "Authorization": `Bearer ${token}`,

@@ -39,7 +39,7 @@ export default function GerenciarAnimais() {
 useEffect(() => {
     const buscarAnimaisDoBanco = async () => {
       try {
-        const response = await fetch("http://localhost:8000/pets", {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets`, {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -111,7 +111,7 @@ useEffect(() => {
     if (!petParaExcluir) return;
 
     try {
-      const response = await fetch(`http://localhost:8000/admin/pets/${petParaExcluir.id_pet}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/pets/${petParaExcluir.id_pet}`, {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${user?.token}`

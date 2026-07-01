@@ -35,7 +35,7 @@ export default function EditarAnimal() {
     async function carregarAnimal() {
       try {
         // Ajuste a rota se o seu endpoint público de detalhes for diferente
-        const response = await fetch(`http://localhost:8000/pets/${id}`);
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}`);
         
         if (response.ok) {
           const data = await response.json();
@@ -91,7 +91,7 @@ export default function EditarAnimal() {
 
     try {
       // Dispara a requisição PATCH para atualizar o registro específico
-      const response = await fetch(`http://localhost:8000/admin/pets/${id}`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/pets/${id}`, {
         method: "PATCH",
         headers: { 
           "Content-Type": "application/json",
