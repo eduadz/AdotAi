@@ -2,7 +2,8 @@
 
 import Header from "@/components/layout/Header";
 import Button from "@/components/ui/Button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useAuth } from "@/context/AuthContext";
 
 // Tipagem para os dados do pedido
 type Pedido = {
@@ -14,31 +15,56 @@ type Pedido = {
 };
 
 export default function PedidosAdocao() {
-  // Mock de dados simulando o retorno do banco de dados
-  const [pedidos, setPedidos] = useState<Pedido[]>([
-    { id: 1, animal: "Caramelo", tutor: "Maria Silva", data: "27/06/2026", status: "Pendente" },
-    { id: 2, animal: "Luna", tutor: "João Oliveira", data: "26/06/2026", status: "Pendente" },
-    { id: 3, animal: "Thor", tutor: "Ana Costa", data: "25/06/2026", status: "Pendente" },
-  ]);
+  const { user } = useAuth();
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Estado para controlar qual pedido está selecionado no Modal
   const [pedidoSelecionado, setPedidoSelecionado] = useState<Pedido | null>(null);
 
+  useEffect(() => {
+    async function carregarPedidos() {
+      if (!user?.token) {
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/adoption-requests`, {
+          headers: {
+            "Authorization": `Bearer ${user.token}`
+          }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          const mapped = data.map((p: any) => ({
+            id: p.id_pedido,
+            animal: p.pet?.nome || "Desconhecido",
+            tutor: p.usuario?.nome || "Desconhecido",
+            data: p.data_pedido ? new Date(p.data_pedido).toLocaleDateString("pt-BR") : "Sem data",
+            status: p.status === "pendente" ? "Pendente" : (p.status === "aceito" ? "Aceito" : "Recusado")
+          }));
+          setPedidos(mapped);
+        }
+      } catch (error) {
+        console.error("Erro ao buscar pedidos:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    carregarPedidos();
+  }, [user?.token]);
+
   // Funções para lidar com as ações do modal
   const handleAceitar = async () => {
-    if (!pedidoSelecionado) return;
-
-    // Recupera o token salvo no momento do login
-    const token = localStorage.getItem("token");
+    if (!pedidoSelecionado || !user?.token) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/pets/${pedidoSelecionado.id}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/adoption-requests/${pedidoSelecionado.id}/accept`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // Envia o token recuperado
-        },
-        body: JSON.stringify({ status: "Aceito" }),
+          "Authorization": `Bearer ${user.token}`
+        }
       });
 
       if (!response.ok) {
@@ -57,30 +83,18 @@ export default function PedidosAdocao() {
     } finally {
       setPedidoSelecionado(null); // Fecha o modal
     }
-
-    // Atualiza o status na lista
-    // setPedidos((prev) =>
-    //   prev.map((p) => (p.id === pedidoSelecionado.id ? { ...p, status: "Aceito" } : p))
-    // );
-    // alert(`Pedido de ${pedidoSelecionado.tutor} para adotar ${pedidoSelecionado.animal} foi ACEITO!`);
-    // setPedidoSelecionado(null); // Fecha o modal
   };
 
   const handleRecusar = async () => {
-    if (!pedidoSelecionado) return;
-
-    // Recupera o token salvo no momento do login
-    const token = localStorage.getItem("token");
+    if (!pedidoSelecionado || !user?.token) return;
 
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/pets/${pedidoSelecionado.id}/status`, {
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/admin/adoption-requests/${pedidoSelecionado.id}/reject`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}` // Envia o token recuperado
-        },
-        // Mudamos o payload para o status que o backend espera ao recusar
-        body: JSON.stringify({ status: "Recusado" }),
+          "Authorization": `Bearer ${user.token}`
+        }
       });
 
       if (!response.ok) {
@@ -120,7 +134,11 @@ export default function PedidosAdocao() {
 
             {/* Lista de Pedidos */}
             <div className="flex flex-col gap-4">
-              {pedidos.map((pedido) => (
+              {loading ? (
+                <p className="text-center font-paragraph font-bold text-adotai-textoPrincipal mt-8 animate-pulse">
+                  Carregando pedidos de adoção...
+                </p>
+              ) : pedidos.map((pedido) => (
                 <div
                   key={pedido.id}
                   onClick={() => pedido.status === "Pendente" && setPedidoSelecionado(pedido)}
@@ -151,7 +169,7 @@ export default function PedidosAdocao() {
                 </div>
               ))}
 
-              {pedidos.length === 0 && (
+              {!loading && pedidos.length === 0 && (
                 <p className="text-center font-paragraph font-bold text-adotai-textoPrincipal mt-8">
                   Nenhum pedido encontrado.
                 </p>

@@ -5,9 +5,11 @@ import Header from "@/components/layout/Header";
 import { Input } from "@/components/ui/Input";
 import { useAuth } from "@/context/AuthContext";
 import Button from "@/components/ui/Button";
+import { useRouter } from "next/navigation";
 
 export default function Perfil() {
   const { user, logout } = useAuth();
+  const router = useRouter();
   
   // 1. O estado agora espelha exatamente a estrutura do seu banco de dados
   const [formData, setFormData] = useState({
@@ -25,11 +27,17 @@ export default function Perfil() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      router.push("/login");
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/users/me`, {
           headers: {
-            "Authorization": `Bearer ${user?.token}`,
+            "Authorization": `Bearer ${user?.token || token}`,
           },
         });
 
@@ -56,12 +64,12 @@ export default function Perfil() {
       }
     };
 
-    if (user?.token) {
+    if (user?.token || token) {
       fetchUserData();
     } else {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

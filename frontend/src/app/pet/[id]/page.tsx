@@ -6,6 +6,7 @@ import Header from "@/components/layout/Header";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
 import Modal from "@/components/ui/Modal"; // ⬅️ 1. Importando o Modal
+import { useAuth } from "@/context/AuthContext";
 
 interface PetDetails {
   id_pet: number;
@@ -28,6 +29,7 @@ interface PetDetails {
 export default function DetalhesPet() {
   const { id } = useParams();
   const router = useRouter();
+  const { user } = useAuth();
   const [pet, setPet] = useState<PetDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [likesCount, setLikesCount] = useState(0);
@@ -41,21 +43,15 @@ export default function DetalhesPet() {
         if (response.ok) {
           const data = await response.json();
           setPet(data);
+          setLikesCount(data.curtidas || 0);
         } else {
           alert("Aviso: Animal não encontrado.");
           router.push("/feed");
         }
 
-        const responseLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/likes`);
-        if (responseLikes.ok) {
-          const likesData = await responseLikes.json();
-          setLikesCount(likesData.count);
-        }
-
-        const token = localStorage.getItem("token");
-        if (token) {
+        if (user.token) {
           const responseMyLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/users/me/likes`, {
-            headers: { "Authorization": `Bearer ${token}` }
+            headers: { "Authorization": `Bearer ${user.token}` }
           });
           if (responseMyLikes.ok) {
             const myLikes = await responseMyLikes.json();
@@ -73,12 +69,10 @@ export default function DetalhesPet() {
     }
 
     if (id) buscarDetalhes();
-  }, [id, router]);
+  }, [id, router, user.token]);
 
   const handleToggleLike = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
+    if (!user.token) {
       alert("Você precisa estar logado para curtir um pet!");
       return;
     }
@@ -92,7 +86,7 @@ export default function DetalhesPet() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/like`, {
         method,
         headers: {
-          "Authorization": `Bearer ${token}`,
+          "Authorization": `Bearer ${user.token}`,
           "Content-Type": "application/json"
         }
       });
@@ -109,9 +103,7 @@ export default function DetalhesPet() {
   };
 
   const handleQueroAdotar = () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
+    if (!user.token) {
       alert("Você precisa estar logado para solicitar uma adoção!");
       router.push("/login"); // ⬅️ Redireciona para o login
       return;

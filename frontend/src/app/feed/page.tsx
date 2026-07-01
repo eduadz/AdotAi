@@ -128,16 +128,10 @@ export default function Feed() {
 
     const temFiltroAtivo = Object.values(filtrosTemporarios).some(val => val !== "");
 
-    if (temFiltroAtivo) {
-      if (resultados.length > 0) {
-        setIsMatchMode(true);
-        setCurrentMatchIndex(0);
-      } else {
-        setIsMatchMode(false);
-        setShowNoMatchModal(true);
-      }
-    } else {
-      setIsMatchMode(false);
+    setIsMatchMode(false);
+
+    if (temFiltroAtivo && resultados.length === 0) {
+      setShowNoMatchModal(true);
     }
   };
 
