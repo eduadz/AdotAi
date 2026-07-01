@@ -137,8 +137,8 @@ export default function Perfil() {
       <Header />
 
       <main className="flex-1 flex flex-col items-start justify-start w-full mt-8">
-        <div className="adotai-container w-full">
-          <div className="bg-adotai-fundoCard border border-adotai-textoPrincipal rounded-adotai p-8 md:p-12 w-full max-w-4xl mx-auto">
+        <div className="adotai-container w-full px-4 md:px-0">
+          <div className="bg-adotai-fundoCard border border-adotai-textoPrincipal rounded-adotai p-6 md:p-12 w-full max-w-4xl mx-auto">
           
             <div className="mb-8">
               <h1 className="text-4xl md:text-5xl font-title font-bold text-adotai-textoPrincipal mb-4">

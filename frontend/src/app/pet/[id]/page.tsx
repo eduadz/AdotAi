@@ -243,10 +243,10 @@ export default function DetalhesPet() {
               </div>
             </div>
 
-            <div className="flex justify-end mt-4">
+            <div className="flex justify-center md:justify-end mt-4">
               <Button
                 variant="secondary"
-                className="w-full sm:w-auto px-12 py-4 text-xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal hover:bg-adotai-primaria transition-colors"
+                className="w-full sm:w-auto px-6 md:px-12 py-3 md:py-4 text-lg md:text-xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal hover:bg-adotai-primaria transition-colors"
                 onClick={handleQueroAdotar}
               >
                 Quero Adotar! 🐾

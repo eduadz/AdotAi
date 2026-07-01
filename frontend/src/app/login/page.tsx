@@ -54,9 +54,9 @@ export default function Login() {
       <Header />
 
       <main className="flex-1 flex flex-col items-center justify-center w-full mt-8">
-        <div className="adotai-container w-full">
-          <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-8 md:p-12 w-full max-w-[500px] mx-auto">
-            <h1 className="text-5xl md:text-6xl font-title font-bold text-adotai-textoPrincipal text-center mb-8">
+        <div className="adotai-container w-full px-4 md:px-0">
+          <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-6 md:p-12 w-full max-w-[500px] mx-auto">
+            <h1 className="text-4xl md:text-6xl font-title font-bold text-adotai-textoPrincipal text-center mb-8">
               Login
             </h1>
 

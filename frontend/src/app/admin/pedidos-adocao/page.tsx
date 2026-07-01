@@ -120,8 +120,8 @@ export default function PedidosAdocao() {
       <Header />
 
       <main className="flex-1 flex flex-col items-start justify-start w-full mt-8">
-        <div className="adotai-container w-full">
-          <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-8 md:p-12 w-full max-w-4xl shadow-sm mx-auto">
+        <div className="adotai-container w-full px-4 md:px-0">
+          <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-6 md:p-12 w-full max-w-4xl shadow-sm mx-auto">
 
             <div className="mb-10 text-center">
               <h1 className="text-4xl md:text-5xl font-title font-bold text-adotai-textoPrincipal mb-2">
@@ -182,7 +182,7 @@ export default function PedidosAdocao() {
       {/* POPUP / MODAL */}
       {pedidoSelecionado && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-8 max-w-md w-full shadow-[8px_8px_0px_rgba(0,0,0,1)]">
+          <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-6 md:p-8 max-w-md w-full shadow-[8px_8px_0px_rgba(0,0,0,1)] max-h-[90vh] overflow-y-auto">
 
             <h2 className="text-3xl font-title font-bold text-adotai-textoPrincipal mb-6 text-center">
               Avaliar Pedido

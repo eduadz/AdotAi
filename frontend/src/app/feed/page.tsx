@@ -36,6 +36,7 @@ export default function Feed() {
 
   // ⬅️ 2. Estado para controlar o Modal de adoção no MatchMode
   const [isAdoptModalOpen, setIsAdoptModalOpen] = useState(false);
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false); // Estado para os filtros no mobile
 
   useEffect(() => {
     async function carregarPets() {
@@ -162,10 +163,22 @@ export default function Feed() {
             onAdopt={() => setIsAdoptModalOpen(true)} // ⬅️ 3. Passando a função de abrir o modal
           />
         ) : (
-          <div className="adotai-container flex flex-col md:flex-row gap-6 w-full">
-            <aside className="w-full md:w-[320px] lg:w-[350px] bg-adotai-fundoCard rounded-adotai border border-adotai-textoSecundario p-6 shadow-adotai-btn h-fit shrink-0">
-              <h2 className="font-title font-extrabold text-2xl text-adotai-textoPrincipal mb-6 border-b-2 border-adotai-textoSecundario pb-2 border-dashed">
+          <div className="adotai-container flex flex-col md:flex-row gap-6 w-full relative">
+            {/* Botão de Filtros no Mobile */}
+            <div className="w-full md:hidden mb-4">
+              <Button 
+                variant="secondary" 
+                className="w-full py-3"
+                onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+              >
+                {isFiltersOpen ? "Esconder Filtros" : "Mostrar Filtros"}
+              </Button>
+            </div>
+
+            <aside className={`w-full md:w-[320px] lg:w-[350px] bg-adotai-fundoCard rounded-adotai border border-adotai-textoSecundario p-6 shadow-adotai-btn h-fit shrink-0 ${isFiltersOpen ? "block" : "hidden"} md:block mb-6 md:mb-0`}>
+              <h2 className="font-title font-extrabold text-2xl text-adotai-textoPrincipal mb-6 border-b-2 border-adotai-textoSecundario pb-2 border-dashed flex justify-between items-center">
                 Filtros
+                <button className="md:hidden text-sm underline" onClick={() => setIsFiltersOpen(false)}>Fechar</button>
               </h2>
               <div className="space-y-4 font-paragraph text-sm text-adotai-textoPrincipal font-bold">
                 {filterGroups.map((group, index) => (
@@ -190,18 +203,21 @@ export default function Feed() {
               <Button 
                 variant="primary" 
                 className="w-full mt-8 py-3 px-4 text-sm"
-                onClick={handleAplicarFiltros}
+                onClick={() => {
+                  handleAplicarFiltros();
+                  setIsFiltersOpen(false); // Fechar filtros no mobile após aplicar
+                }}
               >
                 Aplicar Filtros
               </Button>
             </aside>
 
-            <section className="flex-1 bg-adotai-fundoCard rounded-adotai border border-adotai-textoSecundario p-6 md:p-8 shadow-adotai-btn">
-              <h2 className="font-title font-extrabold text-3xl text-adotai-textoPrincipal mb-8 text-center md:text-left">
+            <section className="flex-1 bg-adotai-fundoCard rounded-adotai border border-adotai-textoSecundario p-4 md:p-8 shadow-adotai-btn">
+              <h2 className="font-title font-extrabold text-2xl md:text-3xl text-adotai-textoPrincipal mb-6 md:mb-8 text-center md:text-left">
                 Amigos disponíveis
               </h2>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
                 {loading ? (
                   <p className="col-span-full text-center font-paragraph font-bold text-adotai-textoPrincipal mt-8 animate-pulse">
                     Buscando amiguinhos...
