@@ -12,7 +12,10 @@ import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      envFilePath: ['.env', '../.env'],
+      isGlobal: true,
+    }),
     DatabaseModule,
     AuthModule,
     UsersModule,
