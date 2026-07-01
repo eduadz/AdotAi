@@ -6,8 +6,15 @@ export class DatabaseService implements OnModuleInit, OnModuleDestroy {
   private pool: pg.Pool;
 
   onModuleInit() {
+    const connectionString = process.env.DATABASE_URL;
+    const isLocal = !connectionString || 
+                    connectionString.includes('localhost') || 
+                    connectionString.includes('127.0.0.1') || 
+                    connectionString.includes('adotai-db');
+
     this.pool = new pg.Pool({
-      connectionString: process.env.DATABASE_URL,
+      connectionString,
+      ssl: isLocal ? false : { rejectUnauthorized: false },
     });
   }
 
