@@ -17,13 +17,14 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, 
+      whitelist: true,
       forbidNonWhitelisted: true,
-      transform: true, 
+      transform: true,
     }),
   );
 
   app.enableCors();
+  app.setGlobalPrefix('api');
 
   const config = new DocumentBuilder()
     .setTitle('AdotAi API')
@@ -41,9 +42,9 @@ async function bootstrap() {
     .addTag('Admin - Fotos', 'Gerenciamento de fotos de animais')
     .addTag('Admin - Pedidos de Adoção', 'Gerenciamento de pedidos pelo administrador')
     .build();
-    
+
   const documentFactory = () => SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, documentFactory);
+  SwaggerModule.setup('docs', app, documentFactory);
 
   await app.listen(process.env.PORT ?? 8000);
 }
