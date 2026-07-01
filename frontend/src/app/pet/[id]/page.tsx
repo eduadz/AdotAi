@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Header from "@/components/layout/Header";
 import Button from "@/components/ui/Button";
 import Image from "next/image";
-import Modal from "@/components/ui/Modal"; // ⬅️ 1. Importando o Modal
+import Modal from "@/components/ui/Modal";
 
 interface PetDetails {
   id_pet: number;
@@ -32,14 +32,12 @@ export default function DetalhesPet() {
   const [loading, setLoading] = useState(true);
   const [likesCount, setLikesCount] = useState(0);
   const [isLiked, setIsLiked] = useState(false);
-  
-  // ⬅️ 2. Estado para controlar o Modal
-  const [isModalOpen, setIsModalOpen] = useState(false); 
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   useEffect(() => {
     async function buscarDetalhes() {
       try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}`);
+        const response = await fetch(`http://localhost:8000/pets/${id}`);
         if (response.ok) {
           const data = await response.json();
           setPet(data);
@@ -48,7 +46,7 @@ export default function DetalhesPet() {
           router.push("/feed");
         }
 
-        const responseLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/likes`);
+        const responseLikes = await fetch(`http://localhost:8000/pets/${id}/likes`);
         if (responseLikes.ok) {
           const likesData = await responseLikes.json();
           setLikesCount(likesData.count);
@@ -56,7 +54,7 @@ export default function DetalhesPet() {
 
         const token = localStorage.getItem("token");
         if (token) {
-          const responseMyLikes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/users/me/likes`, {
+          const responseMyLikes = await fetch(`http://localhost:8000/users/me/likes`, {
             headers: { "Authorization": `Bearer ${token}` }
           });
           if (responseMyLikes.ok) {
@@ -77,11 +75,13 @@ export default function DetalhesPet() {
     if (id) buscarDetalhes();
   }, [id, router]);
 
+  // Modificado: Agora redireciona para a página de login se não houver token
   const handleToggleLike = async () => {
-    const token = localStorage.getItem("token"); 
-    
+    const token = localStorage.getItem("token");
+
     if (!token) {
       alert("Você precisa estar logado para curtir um pet!");
+      router.push("/login"); // ⬅️ Redireciona para o login
       return;
     }
 
@@ -91,7 +91,7 @@ export default function DetalhesPet() {
 
     try {
       const method = previousIsLiked ? "DELETE" : "POST";
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'}/pets/${id}/like`, {
+      const response = await fetch(`http://localhost:8000/pets/${id}/like`, {
         method,
         headers: {
           "Authorization": `Bearer ${token}`,
@@ -108,6 +108,19 @@ export default function DetalhesPet() {
       setLikesCount((prev) => previousIsLiked ? prev + 1 : prev - 1);
       alert("Não foi possível curtir o pet no momento.");
     }
+  };
+
+  // Novo: Função que valida o login antes de abrir o modal de adoção
+  const handleQueroAdotar = () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      alert("Você precisa estar logado para solicitar uma adoção!");
+      router.push("/login"); // ⬅️ Redireciona para o login
+      return;
+    }
+
+    setIsModalOpen(true); // Abre o modal se estiver logado
   };
 
   const formatarValor = (campo: string, valor: any) => {
@@ -158,7 +171,7 @@ export default function DetalhesPet() {
         </button>
 
         <div className="bg-adotai-fundoCard border-[1.5px] border-adotai-textoPrincipal rounded-adotai p-6 md:p-10 shadow-sm flex flex-col md:flex-row gap-8 lg:gap-12">
-          
+
           <div className="w-full md:w-2/5 flex flex-col gap-4">
             <div className="w-full aspect-square bg-white rounded-[25px] border-[1.5px] border-adotai-textoPrincipal relative overflow-hidden shadow-sm">
               <Image
@@ -168,7 +181,7 @@ export default function DetalhesPet() {
                 priority
               />
 
-              <button 
+              <button
                 onClick={handleToggleLike}
                 className="absolute top-4 right-4 bg-white/80 backdrop-blur-sm border-[1.5px] border-adotai-textoPrincipal rounded-full px-4 py-2 flex items-center gap-2 shadow-md hover:bg-white transition-all focus:outline-none"
               >
@@ -180,7 +193,7 @@ export default function DetalhesPet() {
                 </span>
               </button>
             </div>
-            
+
             <div className="bg-adotai-secundaria rounded-[20px] border border-adotai-textoSecundario p-4 text-center">
               <span className="font-paragraph font-bold text-adotai-textoPrincipal text-sm block">
                 Status de Adoção:
@@ -245,7 +258,7 @@ export default function DetalhesPet() {
               <Button
                 variant="secondary"
                 className="w-full sm:w-auto px-12 py-4 text-xl !font-title !font-bold border-[1.5px] border-adotai-textoPrincipal hover:bg-adotai-primaria transition-colors"
-                onClick={() => setIsModalOpen(true)} // ⬅️ 3. Abre o modal ao clicar
+                onClick={handleQueroAdotar} // ⬅️ Modificado: Aponta para a nova função de validação
               >
                 Quero Adotar! 🐾
               </Button>
@@ -255,10 +268,9 @@ export default function DetalhesPet() {
         </div>
       </main>
 
-      {/* ⬅️ 4. Renderizando o Modal no final da tela */}
-      <Modal 
-        isOpen={isModalOpen} 
-        onClose={() => setIsModalOpen(false)} 
+      <Modal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
         title="Formulário de Adoção"
       >
         <div className="flex flex-col gap-4">
@@ -268,7 +280,7 @@ export default function DetalhesPet() {
           <p className="font-paragraph text-adotai-textoPrincipal text-sm">
             Em breve o formulário de solicitação de adoção estará disponível aqui. Fique ligado!
           </p>
-          
+
           <div className="mt-4 flex justify-end">
             <Button variant="primary" onClick={() => setIsModalOpen(false)} className="px-6 py-2">
               Entendi
