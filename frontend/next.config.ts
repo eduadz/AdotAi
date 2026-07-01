@@ -9,6 +9,14 @@ const nextConfig: NextConfig = {
     // Permite que o deploy seja concluído mesmo que o projeto tenha erros de ESLint.
     ignoreDuringBuilds: true,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '**',
+      },
+    ],
+  },
 };
 
 export default nextConfig;
